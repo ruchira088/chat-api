@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-system-service
+  namespace: {{ namespace }}
+spec:
+  selector:
+    app: chat-system
+    branch: {{ git_branch }}
+  ports:
+    - name: http4s-port
+      port: 8000

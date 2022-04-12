@@ -1,0 +1,13 @@
+- name: Create output directory
+  file:
+    path: k8s-output
+    state: directory
+
+- name: Set kubeconfig file location
+  set_fact:
+    kubeconfig: k8s-output/kubeconfig
+
+- name: Create K8s config file
+  copy:
+    dest: "{{ kubeconfig }}"
+    content: "{{ lookup('aws_ssm', '/infrastructure/dev/k8s/config', region='ap-southeast-2') }}"
