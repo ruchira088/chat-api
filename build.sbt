@@ -62,6 +62,13 @@ lazy val api =
     )
     .dependsOn(migrationApp)
 
+lazy val development =
+  (project in file("./development"))
+      .settings(
+        name := "chat-system-development-stack"
+      )
+      .dependsOn(migrationApp, api)
+
 val verifyReleaseBranch = { state: State =>
   val git = Git.mkVcs(state.extract.get(baseDirectory))
   val branch = git.currentBranch

@@ -18,3 +18,28 @@ services:
 #      - "/opt/chat-system/target"
 #      - "/opt/chat-system/project/target"
 #      - "/root/.sbt/1.0/plugins"
+  postgres:
+    image: postgres
+    #    command: ["postgres", "-c", "log_statement=all"]
+    healthcheck:
+      test: "pg_isready -U admin -d chat-system"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: "chat-system"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
+
+  redis:
+    image: redis
+#    command: "redis-server --requirepass my-redis-password"
+    healthcheck:
+      test: "redis-cli ping"
+      start_period: 1s
+      interval: 2s
+      timeout: 1s
+    ports:
+      - 6379:6379

@@ -2,6 +2,8 @@ package com.ruchij.web.routes
 
 import cats.effect.Async
 import cats.implicits._
+import com.ruchij.circe.Decoders.{emailDecoder, passwordDecoder}
+import com.ruchij.circe.Encoders.authenticationTokenEncoder
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.web.requests.{RequestOps, UserLoginRequest}
 import com.ruchij.web.responses.AuthenticationTokenResponse

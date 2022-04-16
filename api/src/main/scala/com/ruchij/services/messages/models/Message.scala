@@ -1,5 +1,6 @@
 package com.ruchij.services.messages.models
 
+import com.ruchij.circe.Decoders.{enumDecoder, authenticationTokenDecoder}
 import com.ruchij.services.authentication.models.AuthenticationToken
 import io.circe.generic.auto.{exportDecoder, exportEncoder}
 import io.circe.{Decoder, Encoder, HCursor}

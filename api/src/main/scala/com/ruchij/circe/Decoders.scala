@@ -2,6 +2,7 @@ package com.ruchij.circe
 
 import com.ruchij.dao.user.models.Email
 import com.ruchij.services.authentication.models.{AuthenticationToken, Password}
+import enumeratum.{Enum, EnumEntry}
 import io.circe.Decoder
 import org.joda.time.DateTime
 import shapeless.{::, Generic, HNil}
@@ -22,5 +23,8 @@ object Decoders {
   implicit val emailDecoder: Decoder[Email] = stringWrapperDecoder[Email]
 
   implicit val authenticationTokenDecoder: Decoder[AuthenticationToken] = stringWrapperDecoder[AuthenticationToken]
+
+  implicit def enumDecoder[A <: EnumEntry](implicit enumValues: Enum[A]): Decoder[A] =
+    Decoder.decodeString.emap(input => enumValues.withNameInsensitiveEither(input).left.map(_.getMessage()))
 
 }

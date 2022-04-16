@@ -39,7 +39,7 @@ class AuthenticationServiceImpl[F[_]: MonadThrow: JodaClock: RandomGenerator[*[_
 
           token <- RandomGenerator[F, UUID].generate
           timestamp <- JodaClock[F].timestamp
-          expiryTime = timestamp.plus(SessionDuration.length)
+          expiryTime = timestamp.plus(SessionDuration.toMillis)
 
           authenticationToken = AuthenticationToken(token.toString)
           authenticationTokenDetails =
@@ -57,7 +57,7 @@ class AuthenticationServiceImpl[F[_]: MonadThrow: JodaClock: RandomGenerator[*[_
         JodaClock[F].timestamp
           .flatMap { timestamp =>
             if (timestamp.isBefore(authenticationTokenDetails.expiresAt))
-              Applicative[F].pure(timestamp.plus(SessionDuration.length))
+              Applicative[F].pure(timestamp.plus(SessionDuration.toMillis))
             else ApplicativeError[F, Throwable].raiseError[DateTime](AuthenticationException("Expired authentication token"))
           }
           .flatMap { updatedExpiryTime =>
