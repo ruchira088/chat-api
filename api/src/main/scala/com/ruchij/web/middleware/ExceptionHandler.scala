@@ -5,7 +5,7 @@ import cats.arrow.FunctionK
 import cats.data.{Kleisli, NonEmptyList}
 import cats.effect.Sync
 import cats.implicits._
-import com.ruchij.exceptions.ResourceNotFoundException
+import com.ruchij.exceptions.{AuthenticationException, ResourceConflictException, ResourceNotFoundException}
 import com.ruchij.types.Logger
 import com.ruchij.web.responses.ErrorResponse
 import io.circe.DecodingFailure
@@ -33,6 +33,10 @@ object ExceptionHandler {
 
   val throwableStatusMapper: Throwable => Status = {
     case _: ResourceNotFoundException => Status.NotFound
+
+    case _: ResourceConflictException => Status.Conflict
+
+    case _: AuthenticationException => Status.Unauthorized
 
     case _ => Status.InternalServerError
   }

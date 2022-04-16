@@ -5,6 +5,8 @@ import cats.implicits._
 import com.ruchij.services.user.UserService
 import com.ruchij.web.requests.{CreateUserRequest, RequestOps}
 import com.ruchij.web.validate.Validator.baseValidator
+import com.ruchij.circe.Decoders.{emailDecoder, passwordDecoder}
+import com.ruchij.circe.Encoders.{dateTimeEncoder, emailEncoder}
 import io.circe.generic.auto._
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec._
@@ -25,9 +27,10 @@ object UserRoutes {
               createUserRequest.email,
               createUserRequest.password
             )
-        }
-        yield Created(user)
 
+          response <- Created(user)
+        }
+        yield response
     }
   }
 }

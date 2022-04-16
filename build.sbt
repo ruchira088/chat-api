@@ -20,6 +20,16 @@ inThisBuild {
   )
 }
 
+lazy val migrationApp =
+  (project in file("./migration-app"))
+    .enablePlugins(JavaAppPackaging)
+    .settings(
+      name := "chat-system-migration-app",
+      libraryDependencies ++= Seq(catsEffect, flyway, postgres, h2, pureconfig, scalaLogging, logbackClassic),
+      topLevelDirectory := None,
+      Universal / javaOptions ++= Seq("-Dlogback.configurationFile=/opt/data/logback.xml"),
+    )
+
 lazy val api =
   (project in file("./api"))
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging)
@@ -34,6 +44,12 @@ lazy val api =
           circeParser,
           circeLiteral,
           jodaTime,
+          doobieHikari,
+          postgres,
+          h2,
+          bcrypt,
+          enumeratum,
+          redis4CatsEffect,
           pureconfig,
           logbackClassic,
           scalaLogging
@@ -44,6 +60,7 @@ lazy val api =
       topLevelDirectory := None,
       Universal / javaOptions ++= Seq("-Dlogback.configurationFile=/opt/data/logback.xml"),
     )
+    .dependsOn(migrationApp)
 
 val verifyReleaseBranch = { state: State =>
   val git = Git.mkVcs(state.extract.get(baseDirectory))
@@ -64,9 +81,10 @@ val mergeReleaseToMaster = { state: State =>
   updatedState.log.info(s"Merging $releaseTag to $ProductionBranch...")
 
   val userInput: Option[ProcessBuilder] =
-    SimpleReader.readLine("Push changes to the remote master branch (y/n)? [y]")
+    SimpleReader
+      .readLine("Push changes to the remote master branch (y/n)? [y]")
       .map(_.toLowerCase) match {
-      case Some("y") | Some("")  =>
+      case Some("y") | Some("") =>
         updatedState.log.info(s"Pushing changes to remote master ($releaseTag)...")
         Some(git.cmd("push"))
 
