@@ -8,4 +8,8 @@ trait MessagingService[F[_]] {
   def register(user: User, channel: Channel[F, Message]): F[Unit]
 
   def unregister(user: User): F[Unit]
+
+  def submit(user: User, message: Message): F[Unit]
+
+  def sendToUser(userId: String, message: Message): F[Boolean]
 }

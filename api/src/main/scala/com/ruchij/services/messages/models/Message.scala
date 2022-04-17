@@ -1,36 +1,19 @@
 package com.ruchij.services.messages.models
 
-import com.ruchij.circe.Decoders.{enumDecoder, authenticationTokenDecoder}
 import com.ruchij.services.authentication.models.AuthenticationToken
-import io.circe.generic.auto.{exportDecoder, exportEncoder}
-import io.circe.{Decoder, Encoder, HCursor}
 
 sealed trait Message
 
 object Message {
-  case class Authentication(authenticationToken: AuthenticationToken) extends Message
+  sealed trait ServiceMessage extends Message
 
-  private case class TypedMessage(messageType: MessageType)
+  case class Authentication(authenticationToken: AuthenticationToken) extends ServiceMessage
 
-  private val messageTypeMapper: Message => MessageType = {
-    case _: Authentication => MessageType.Authentication
+  sealed trait UserMessage extends Message {
+    val message: String
   }
 
-  implicit val messageCirceDecoder: Decoder[Message] =
-    (cursor: HCursor) =>
-      Decoder[TypedMessage].apply(cursor)
-        .map(_.messageType)
-        .flatMap {
-          case MessageType.Authentication => Decoder[Authentication].apply(cursor)
-        }
-
-  val baseMessageCirceEncoder: Encoder[Message] = {
-    case authentication: Authentication => Encoder[Authentication].apply(authentication)
-  }
-
-  implicit val messageCirceEncoder: Encoder[Message] =
-    (message: Message) =>
-      baseMessageCirceEncoder.apply(message)
-        .deepMerge(Encoder[TypedMessage].apply(TypedMessage(messageTypeMapper(message))))
+  case class PersonalMessage(receiverUserId: String, message: String) extends UserMessage
+  case class GroupMessage(groupId: String, message: String) extends UserMessage
 
 }
