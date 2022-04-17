@@ -1,6 +1,7 @@
 package com.ruchij.config
 
 import cats.effect.IO
+import com.ruchij.migration.config.DatabaseConfiguration
 import com.ruchij.test.utils.IOUtils.{IOErrorOps, runIO}
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -13,6 +14,27 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
     val configObjectSource =
       ConfigSource.string {
         s"""
+          database-configuration {
+            url = "jdbc:h2:mem:chat-system;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false"
+            url = $${?DATABASE_URL}
+
+            user = "my-user"
+            user = $${?DATABASE_USER}
+
+            password = "my-password"
+            password = $${?DATABASE_PASSWORD}
+          }
+
+          redis-configuration {
+            hostname = "localhost"
+            hostname = $${?REDIS_HOSTNAME}
+
+            port = 6379
+            port = $${?REDIS_PORT}
+
+            password = $${?REDIS_PASSWORD}
+          }
+
           http-configuration {
             host = "127.0.0.1"
             host = $${?HTTP_HOST}
@@ -31,13 +53,21 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
         """
       }
 
-    ServiceConfiguration.parse[IO](configObjectSource).flatMap {
-      serviceConfiguration =>
-        IO.delay {
-          serviceConfiguration.httpConfiguration mustBe HttpConfiguration("127.0.0.1", 80)
-          serviceConfiguration.buildInformation mustBe
-            BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))
-        }
+    ServiceConfiguration.parse[IO](configObjectSource).flatMap { serviceConfiguration =>
+      IO.delay {
+        serviceConfiguration.databaseConfiguration mustBe DatabaseConfiguration(
+          "jdbc:h2:mem:chat-system;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false",
+          "my-user",
+          "my-password"
+        )
+
+        serviceConfiguration.redisConfiguration mustBe RedisConfiguration("localhost", 6379, None)
+
+        serviceConfiguration.httpConfiguration mustBe HttpConfiguration("127.0.0.1", 80)
+
+        serviceConfiguration.buildInformation mustBe
+          BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))
+      }
     }
   }
 
@@ -59,10 +89,14 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
         """
       }
 
-    ServiceConfiguration.parse[IO](configObjectSource).error
+    ServiceConfiguration
+      .parse[IO](configObjectSource)
+      .error
       .flatMap { throwable =>
         IO.delay {
-          throwable.getMessage must include("Cannot convert 'invalid-date' to DateTime: Invalid format: \"invalid-date\"")
+          throwable.getMessage must include(
+            "Cannot convert 'invalid-date' to DateTime: Invalid format: \"invalid-date\""
+          )
         }
       }
   }
