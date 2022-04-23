@@ -30,8 +30,8 @@ lazy val migrationApp =
       Universal / javaOptions ++= Seq("-Dlogback.configurationFile=/opt/data/logback.xml"),
     )
 
-lazy val api =
-  (project in file("./api"))
+lazy val root =
+  (project in file("."))
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging)
     .settings(
       name := "chat-system-api",
@@ -67,7 +67,7 @@ lazy val development =
       .settings(
         name := "chat-system-development-stack"
       )
-      .dependsOn(migrationApp, api)
+      .dependsOn(migrationApp, root)
 
 val verifyReleaseBranch = { state: State =>
   val git = Git.mkVcs(state.extract.get(baseDirectory))

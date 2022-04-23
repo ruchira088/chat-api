@@ -10,6 +10,7 @@ import com.ruchij.dao.doobie.DoobieTransactor
 import com.ruchij.dao.user.DoobieUserDao
 import com.ruchij.kv.{KeySpace, KeySpacedKeyValueStore, RedisKeyValueStore}
 import com.ruchij.migration.MigrationApp
+import com.ruchij.pubsub.InMemoryPublisher
 import com.ruchij.services.authentication.AuthenticationServiceImpl
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
 import com.ruchij.services.hashing.BcryptPasswordHashingService
@@ -72,7 +73,7 @@ object App extends IOApp {
           val userService =
             new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
 
-          val messagingService = new MessagingServiceImpl[F](???)
+          val messagingService = new MessagingServiceImpl[F](new InMemoryPublisher[F])
 
           val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
 
