@@ -72,7 +72,7 @@ object App extends IOApp {
           val userService =
             new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
 
-          val messagingService = new MessagingServiceImpl[F]
+          val messagingService = new MessagingServiceImpl[F](???)
 
           val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
 

@@ -6,13 +6,14 @@ import cats.implicits._
 import com.ruchij.dao.user.models.User
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
-import com.ruchij.services.messages.models.Message
-import com.ruchij.web.requests.WebSocketMessages._
+import com.ruchij.services.messages.models.UserMessage
 import com.ruchij.types.FunctionKTypes._
 import com.ruchij.types.Logger
+import com.ruchij.web.requests.ws.{InboundMessage, OutboundMessage}
 import fs2.Stream
 import fs2.concurrent.Channel
 import io.circe.{Encoder, parser => JsonParser}
+import io.circe.generic.auto.exportEncoder
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.websocket.WebSocketBuilder2
@@ -39,15 +40,15 @@ object WebSocketRoutes {
             .build(
               for {
                 user <- Stream.eval(deferred.get)
-                channel <- Stream.eval(Channel.unbounded[F, Message])
+                channel <- Stream.eval(Channel.unbounded[F, UserMessage])
                 _ <- Stream.eval(messagingService.register(user, channel))
-                message <- channel.stream
-              } yield WebSocketFrame.Text(Encoder[Message].apply(message).noSpaces, last = false),
+                userMessage <- channel.stream
+              } yield WebSocketFrame.Text(Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces, last = false),
               input =>
                 input
                   .flatMap {
                     case WebSocketFrame.Text(text, _) =>
-                      Stream.eval[F, Message](JsonParser.parse(text).flatMap(_.as[Message]).toType[F, Throwable])
+                      Stream.eval[F, InboundMessage](JsonParser.parse(text).flatMap(_.as[InboundMessage]).toType[F, Throwable])
                         .handleErrorWith { throwable =>
                           Stream.eval(logger.error("Unable to decode web socket message", throwable))
                             .productR(Stream.empty)
@@ -55,13 +56,17 @@ object WebSocketRoutes {
 
                     case _ => Stream.empty
                   }
-                  .evalMap {
-                    case Message.Authentication(authenticationToken) =>
-                      authenticationService.authenticate(authenticationToken)
-                        .flatMap { user => deferred.complete(user).as((): Unit) }
+                  .flatMap {
+                    case InboundMessage.Authentication(authenticationToken) =>
+                      Stream.eval { authenticationService.authenticate(authenticationToken).flatMap(deferred.complete) }
+                        .productR(Stream.empty)
 
-                    case message =>
-                      deferred.get.flatMap(user => messagingService.submit(user, message))
+                    case inboundMessage =>
+                      messagingService.submit {
+                        Stream.eval(deferred.get)
+                          .flatMap { user => Stream.emits(InboundMessage.toUserMessage(user.id, inboundMessage).toList) }
+                      }
+
                 }
             )
         }
