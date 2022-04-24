@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: chat-system-data-config-map
+  name: chat-api-data-config-map
   namespace: {{ namespace }}
 data:
 {% for key, value in config_values.items() %}

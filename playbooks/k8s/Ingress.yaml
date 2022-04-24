@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: chat-system-ingress
+  name: chat-api-ingress
   namespace: {{ namespace }}
 spec:
   tls:
-    - secretName: chat-system-tls
+    - secretName: chat-api-tls
       hosts:
         - {{ hostname }}
   rules:
@@ -15,6 +15,6 @@ spec:
           - pathType: ImplementationSpecific
             backend:
               service:
-                name: chat-system-service
+                name: chat-api-service
                 port:
                   name: http4s-port

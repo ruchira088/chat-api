@@ -1,4 +1,4 @@
-name: chat-system-build-pipeline
+name: chat-api-build-pipeline
 
 on: [push, pull_request]
 

@@ -19,7 +19,7 @@ class HealthRoutesSpec extends AnyFlatSpec with Matchers with MockedRoutesIO {
 
     val expectedJsonResponse =
       json"""{
-        "serviceName": "chat-system",
+        "serviceName": "chat-api",
         "serviceVersion": "1.0.0",
         "organization": "com.ruchij",
         "scalaVersion": "2.13.6",
@@ -37,7 +37,7 @@ class HealthRoutesSpec extends AnyFlatSpec with Matchers with MockedRoutesIO {
           .returns {
             IO.pure {
               ServiceInformation(
-                "chat-system",
+                "chat-api",
                 "1.0.0",
                 "com.ruchij",
                 "2.13.6",

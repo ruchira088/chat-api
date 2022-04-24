@@ -9,7 +9,7 @@ RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /e
     sudo apt update && \
     sudo apt install sbt
 
-WORKDIR /opt/chat-system
+WORKDIR /opt/chat-api
 
 COPY . .
 

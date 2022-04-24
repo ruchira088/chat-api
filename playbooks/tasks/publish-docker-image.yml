@@ -4,14 +4,14 @@
 - name: Verify Docker Hub repository
   block:
     - uri:
-        url: https://hub.docker.com/v2/repositories/ruchira088/chat-system/
+        url: https://hub.docker.com/v2/repositories/ruchira088/chat-api/
         status_code:
           - 200
           - 404
       register: response
 
     - fail:
-        msg: Unable to find Docker Hub repository for chat-system
+        msg: Unable to find Docker Hub repository for chat-api
       when: response.status != 200
 
 - name: Login to Docker Hub
@@ -22,5 +22,5 @@
 
 - name: Publish Docker image
   shell: |
-    docker tag chat-system:{{ git_branch }}-{{ git_commit }} ruchira088/chat-system:{{ git_branch }}-{{ git_commit }} && \
-    docker push ruchira088/chat-system:{{ git_branch }}-{{ git_commit }}
+    docker tag chat-api:{{ git_branch }}-{{ git_commit }} ruchira088/chat-api:{{ git_branch }}-{{ git_commit }} && \
+    docker push ruchira088/chat-api:{{ git_branch }}-{{ git_commit }}

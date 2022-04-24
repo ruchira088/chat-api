@@ -1,10 +1,10 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: chat-system-certificate
+  name: chat-api-certificate
   namespace: {{ namespace }}
 spec:
-  secretName: chat-system-tls
+  secretName: chat-api-tls
   issuerRef:
     kind: ClusterIssuer
     name: lets-encrypt

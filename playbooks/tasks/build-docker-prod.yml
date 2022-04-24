@@ -1,6 +1,6 @@
 - name: Print start message
   debug:
-    msg: Started building chat-system
+    msg: Started building chat-api
 
 - name: Create output directory
   file:
@@ -24,9 +24,9 @@
   shell: |
     docker build \
       -f docker-output/Dockerfile \
-      -t chat-system:latest \
-      -t chat-system:{{ git_branch }}-{{ git_commit }} \
-      -t chat-system:{{ git_branch }}-{{ ansible_date_time.iso8601_basic_short }} \
+      -t chat-api:latest \
+      -t chat-api:{{ git_branch }}-{{ git_commit }} \
+      -t chat-api:{{ git_branch }}-{{ ansible_date_time.iso8601_basic_short }} \
       ../target/universal/
 
 - name: Clean up output directory
@@ -36,4 +36,4 @@
 
 - name: Print finish message
   debug:
-    msg: Completed building chat-system
+    msg: Completed building chat-api

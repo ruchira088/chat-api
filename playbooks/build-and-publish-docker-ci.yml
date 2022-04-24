@@ -9,8 +9,8 @@
     - name: Build Docker CI image
       shell: |
         docker build \
-          -t chat-system-ci:latest \
-          -t chat-system-ci:{{ git_commit }} \
+          -t chat-api-ci:latest \
+          -t chat-api-ci:{{ git_commit }} \
           -f ../.circleci/Dockerfile .
 
     - name: Login to Docker Hub
@@ -21,9 +21,9 @@
 
     - name: Publish Docker image
       shell: |
-        docker tag chat-system-ci:{{ git_commit }} ruchira088/docker-ci:chat-system-{{ date }} && \
-        docker tag chat-system-ci:{{ git_commit }} ruchira088/docker-ci:chat-system && \
-        docker push ruchira088/docker-ci:chat-system-{{ date }} && \
-        docker push ruchira088/docker-ci:chat-system
+        docker tag chat-api-ci:{{ git_commit }} ruchira088/docker-ci:chat-api-{{ date }} && \
+        docker tag chat-api-ci:{{ git_commit }} ruchira088/docker-ci:chat-api && \
+        docker push ruchira088/docker-ci:chat-api-{{ date }} && \
+        docker push ruchira088/docker-ci:chat-api
       vars:
         date: "{{ ansible_date_time.date }}"

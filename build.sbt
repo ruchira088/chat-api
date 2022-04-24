@@ -24,7 +24,7 @@ lazy val migrationApp =
   (project in file("./migration-app"))
     .enablePlugins(JavaAppPackaging)
     .settings(
-      name := "chat-system-migration-app",
+      name := "chat-migration-app",
       libraryDependencies ++= Seq(catsEffect, flyway, postgres, h2, pureconfig, scalaLogging, logbackClassic),
       topLevelDirectory := None,
       Universal / javaOptions ++= Seq("-Dlogback.configurationFile=/opt/data/logback.xml"),
@@ -34,7 +34,7 @@ lazy val root =
   (project in file("."))
     .enablePlugins(BuildInfoPlugin, JavaAppPackaging)
     .settings(
-      name := "chat-system-api",
+      name := "chat-api",
       libraryDependencies ++=
         Seq(
           http4sDsl,
@@ -65,7 +65,7 @@ lazy val root =
 lazy val development =
   (project in file("./development"))
       .settings(
-        name := "chat-system-development-stack"
+        name := "chat-api-development"
       )
       .dependsOn(migrationApp, root)
 

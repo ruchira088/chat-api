@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: chat-system-file-config-map
+  name: chat-api-file-config-map
   namespace: {{ namespace }}
 data:
   logback.xml: |

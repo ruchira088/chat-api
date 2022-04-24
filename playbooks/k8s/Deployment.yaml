@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chat-system-deployment
+  name: chat-api-deployment
   namespace: {{ namespace }}
 spec:
   selector:
     matchLabels:
-      app: chat-system
+      app: chat-api
       branch: {{ git_branch }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: chat-system
+        app: chat-api
         branch: {{ git_branch }}
     spec:
       containers:
-        - name: chat-system-container
-          image: ruchira088/chat-system:{{ git_branch }}-{{ git_commit }}
+        - name: chat-api-container
+          image: ruchira088/chat-api:{{ git_branch }}-{{ git_commit }}
           envFrom:
             - configMapRef:
-                name: chat-system-data-config-map
+                name: chat-api-data-config-map
             - secretRef:
-                name: chat-system-secrets
+                name: chat-api-secrets
           readinessProbe:
             httpGet:
               port: http4s-port
@@ -55,5 +55,5 @@ spec:
       volumes:
         - name: file-config-map
           configMap:
-            name: chat-system-file-config-map
+            name: chat-api-file-config-map
 
