@@ -26,13 +26,17 @@ object Dependencies
 
   lazy val doobieHikari = "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2"
 
-  lazy val postgres = "org.postgresql" % "postgresql" % "42.3.3"
+  lazy val postgres = "org.postgresql" % "postgresql" % "42.3.4"
 
   lazy val h2 = "com.h2database" % "h2" % "2.1.212"
 
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.4"
 
   lazy val redis4CatsEffect = "dev.profunktor" %% "redis4cats-effects" % "1.1.1"
+
+  lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "3.1.0"
+
+  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.0"
 
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 

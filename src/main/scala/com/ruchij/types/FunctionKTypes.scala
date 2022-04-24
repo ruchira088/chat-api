@@ -1,10 +1,14 @@
 package com.ruchij.types
 
+import cats.effect.IO
 import cats.{Applicative, ApplicativeError, ~>}
 
-object FunctionKTypes {
+import scala.concurrent.Future
 
-  implicit class FunctionK2TypeOps[F[+_, +_], A, B](value: F[B, A]) {
+object FunctionKTypes {
+  type WrappedFuture[F[_], A] = F[Future[A]]
+
+  implicit class FunctionK2TypeOps[F[+ _, + _], A, B](value: F[B, A]) {
     def toType[G[_], C >: B](implicit functionK: F[C, *] ~> G): G[A] = functionK(value)
   }
 
@@ -13,5 +17,9 @@ object FunctionKTypes {
       override def apply[A](either: Either[L, A]): F[A] =
         either.fold(ApplicativeError[F, L].raiseError, Applicative[F].pure)
     }
+
+  implicit val ioFutureToIO: WrappedFuture[IO, *] ~> IO = new ~>[WrappedFuture[IO, *], IO] {
+    override def apply[A](fa: WrappedFuture[IO, A]): IO[A] = IO.fromFuture(fa)
+  }
 
 }

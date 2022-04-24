@@ -1,4 +1,4 @@
-package com.ruchij.pubsub
+package com.ruchij.pub
 
 import cats.effect.kernel.Sync
 import com.ruchij.services.messages.models.UserMessage

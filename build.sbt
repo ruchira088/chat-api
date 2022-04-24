@@ -50,11 +50,14 @@ lazy val root =
           bcrypt,
           enumeratum,
           redis4CatsEffect,
+          kafkaClients,
+          kafkaAvroSerializer,
           pureconfig,
           logbackClassic,
           scalaLogging
         ) ++
           Seq(scalaTest, scalaMock, pegdown).map(_ % Test),
+      resolvers ++= Seq("Confluent" at "https://packages.confluent.io/maven/"),
       buildInfoKeys := Seq[BuildInfoKey](name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",
       topLevelDirectory := None,

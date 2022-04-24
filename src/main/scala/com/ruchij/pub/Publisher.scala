@@ -1,4 +1,4 @@
-package com.ruchij.pubsub
+package com.ruchij.pub
 
 import fs2.Pipe
 
