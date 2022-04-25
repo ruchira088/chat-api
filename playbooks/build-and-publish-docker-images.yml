@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Build API Docker image
+      import_tasks: tasks/build-docker-prod.yml
+      vars:
+        app_name: chat-api
+        sbt_project: root
+        dockerfile: Dockerfile-prod.j2
+        target_folder: target
+
+    - name: Build Migration App Docker image
+      import_tasks: tasks/build-docker-prod.yml
+      vars:
+        app_name: chat-migration-app
+        sbt_project: migrationApp
+        dockerfile: Dockerfile-migration-prod.j2
+        target_folder: migration-app/target
+
+    - name: Publish API Docker image
+      import_tasks: tasks/publish-docker-image.yml
+      vars:
+        app_name: chat-api
+
+    - name: Publish Migration App Docker image
+      import_tasks: tasks/publish-docker-image.yml
+      vars:
+        app_name: chat-migration-app

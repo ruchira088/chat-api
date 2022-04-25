@@ -56,7 +56,7 @@ jobs:
       - restore_cache: *dependency-cache-keys
       - run:
           name: Build and publish Docker image
-          command: ansible-playbook playbooks/build-and-publish-docker-image.yml
+          command: ansible-playbook playbooks/build-and-publish-docker-images.yml
 
   deploy-to-k8s:
     docker:

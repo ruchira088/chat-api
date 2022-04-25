@@ -3,5 +3,5 @@
   connection: local
 
   tasks:
-    - name: Remove Video Downloader API Docker images
-      shell: docker images | grep "chat-api" | awk '{print $3}' | xargs docker rmi -f
+    - name: Remove created Docker images
+      shell: docker images | grep "chat-" | awk '{print $3}' | xargs docker rmi -f
