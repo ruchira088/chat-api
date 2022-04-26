@@ -78,6 +78,7 @@ workflows:
       - build-and-test:
           context:
             - slack-webhook
+            - artifactory-credentials
           post-steps:
             - slack/status
 
@@ -85,6 +86,7 @@ workflows:
           context:
             - aws-credentials
             - slack-webhook
+            - artifactory-credentials
           requires:
             - build-and-test
           post-steps:

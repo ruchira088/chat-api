@@ -63,7 +63,15 @@ lazy val root =
           "Confluent" at "https://packages.confluent.io/maven/",
           "JFrog Artifactory" at "https://ruchij.jfrog.io/artifactory/default-maven-virtual/"
         ),
-      credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
+      credentials += {
+        val artifactoryCredentials =
+            for {
+            username <- environmentVariable("ARTIFACTORY_USERNAME")
+            password <- environmentVariable("ARTIFACTORY_PASSWORD")
+          } yield Credentials("Artifactory Realm", "ruchij.jfrog.io", username, password)
+
+        artifactoryCredentials.getOrElse(Credentials(Path.userHome / ".sbt" / ".credentials"))
+      },
       buildInfoKeys := Seq[BuildInfoKey](name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",
       topLevelDirectory := None,
@@ -143,6 +151,12 @@ viewCoverageResults := {
 
   Desktop.getDesktop.browse(coverageResults.toUri)
 }
+
+def environmentVariable(envName: String): Either[Exception, String] =
+  sys.env.get(envName) match {
+    case None => Left(new IllegalStateException(s"$envName is not defined as an environment variable"))
+    case Some(envValue) => Right(envValue)
+  }
 
 addCommandAlias("cleanCompile", "; clean; compile")
 addCommandAlias("cleanTest", "; clean; test")
