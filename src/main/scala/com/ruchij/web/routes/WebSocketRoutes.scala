@@ -3,13 +3,14 @@ package com.ruchij.web.routes
 import cats.data.OptionT
 import cats.effect.{Async, Deferred}
 import cats.implicits._
+import com.ruchij.circe.Encoders.{dateTimeEncoder, enumEncoder}
 import com.ruchij.dao.user.models.User
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.UserMessage
 import com.ruchij.types.FunctionKTypes._
-import com.ruchij.types.Logger
-import com.ruchij.web.requests.ws.{InboundMessage, OutboundMessage}
+import com.ruchij.types.{JodaClock, Logger}
+import com.ruchij.web.ws.{InboundMessage, OutboundMessage}
 import fs2.Stream
 import fs2.concurrent.Channel
 import io.circe.{Encoder, parser => JsonParser}
@@ -23,7 +24,7 @@ object WebSocketRoutes {
 
   private val logger = Logger[WebSocketRoutes.type]
 
-  def apply[F[_]: Async](
+  def apply[F[_]: Async: JodaClock](
     messagingService: MessagingService[F],
     authenticationService: AuthenticationService[F],
     webSocketBuilder2: WebSocketBuilder2[F]
@@ -63,8 +64,10 @@ object WebSocketRoutes {
 
                     case inboundMessage =>
                       messagingService.submit {
-                        Stream.eval(deferred.get)
-                          .flatMap { user => Stream.emits(InboundMessage.toUserMessage(user.id, inboundMessage).toList) }
+                        Stream.eval(deferred.get.product(JodaClock[F].timestamp))
+                          .flatMap { case (user, timestamp) =>
+                            Stream.emits(InboundMessage.toUserMessage(user.id, inboundMessage, timestamp).toList)
+                          }
                       }
 
                 }

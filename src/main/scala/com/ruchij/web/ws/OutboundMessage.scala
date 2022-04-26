@@ -1,4 +1,4 @@
-package com.ruchij.web.requests.ws
+package com.ruchij.web.ws
 
 import com.ruchij.services.messages.models.UserMessage
 import com.ruchij.services.messages.models.UserMessage.{Group, OneToOne}

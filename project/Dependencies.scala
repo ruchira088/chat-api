@@ -38,6 +38,8 @@ object Dependencies
 
   lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.0"
 
+  lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0-SNAPSHOT"
+
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.11"

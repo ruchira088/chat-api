@@ -16,7 +16,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 import scala.concurrent.Promise
 
-class KafkaPublisher[F[_]: Async, A](kafkaProducer: KafkaProducer[String, SpecificRecord], topic: KafkaTopic[A])(
+class KafkaPublisher[F[_]: Async, A, B <: SpecificRecord](kafkaProducer: KafkaProducer[String, SpecificRecord], topic: KafkaTopic[A, B])(
   implicit futureUnwrapper: WrappedFuture[F, *] ~> F
 ) extends Publisher[F, A] {
 
@@ -44,7 +44,7 @@ class KafkaPublisher[F[_]: Async, A](kafkaProducer: KafkaProducer[String, Specif
 }
 
 object KafkaPublisher {
-  def kafkaProducer[F[_]: Sync](
+  def createProducer[F[_]: Sync](
     kafkaConfiguration: KafkaConfiguration
   ): Resource[F, KafkaProducer[String, SpecificRecord]] = {
     val properties =

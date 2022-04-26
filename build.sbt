@@ -52,12 +52,18 @@ lazy val root =
           redis4CatsEffect,
           kafkaClients,
           kafkaAvroSerializer,
+          chatAvroSchemas,
           pureconfig,
           logbackClassic,
           scalaLogging
         ) ++
           Seq(scalaTest, scalaMock, pegdown).map(_ % Test),
-      resolvers ++= Seq("Confluent" at "https://packages.confluent.io/maven/"),
+      resolvers ++=
+        Seq(
+          "Confluent" at "https://packages.confluent.io/maven/",
+          "JFrog Artifactory" at "https://ruchij.jfrog.io/artifactory/default-maven-virtual/"
+        ),
+      credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
       buildInfoKeys := Seq[BuildInfoKey](name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",
       topLevelDirectory := None,

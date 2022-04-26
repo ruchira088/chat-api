@@ -1,7 +1,9 @@
 package com.ruchij
 
+import cats.data.Reader
 import cats.effect.kernel.Resource
 import cats.effect.{Async, ExitCode, IO, IOApp}
+import cats.~>
 import com.ruchij.circe.Decoders.{authenticationTokenDecoder, dateTimeDecoder}
 import com.ruchij.circe.Encoders.{authenticationTokenEncoder, dateTimeEncoder}
 import com.ruchij.config.ServiceConfiguration
@@ -11,23 +13,34 @@ import com.ruchij.dao.user.DoobieUserDao
 import com.ruchij.kv.{KeySpace, KeySpacedKeyValueStore, RedisKeyValueStore}
 import com.ruchij.migration.MigrationApp
 import com.ruchij.pub.InMemoryPublisher
+import com.ruchij.pub.kafka.KafkaPublisher
 import com.ruchij.services.authentication.AuthenticationServiceImpl
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
 import com.ruchij.services.hashing.BcryptPasswordHashingService
 import com.ruchij.services.health.HealthServiceImpl
 import com.ruchij.services.messages.MessagingServiceImpl
 import com.ruchij.services.user.UserServiceImpl
+import com.ruchij.types.JodaClock
 import com.ruchij.web.Routes
 import dev.profunktor.redis4cats.effect.Log.Stdout.instance
-import dev.profunktor.redis4cats.Redis
+import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import doobie.ConnectionIO
+import doobie.hikari.HikariTransactor
+import io.circe.generic.auto._
+import org.apache.avro.specific.SpecificRecord
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.http4s.HttpApp
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.websocket.WebSocketBuilder2
-import io.circe.generic.auto._
 import pureconfig.ConfigSource
 
 object App extends IOApp {
+  case class ApplicationResources[F[_]](
+    redisCommands: RedisCommands[F, String, String],
+    kafkaProducer: KafkaProducer[String, SpecificRecord],
+    hikariTransactor: HikariTransactor[F]
+  )
+
   override def run(args: List[String]): IO[ExitCode] =
     for {
       configObjectSource <- IO.delay(ConfigSource.defaultApplication)
@@ -35,9 +48,9 @@ object App extends IOApp {
 
       _ <- MigrationApp.migrate[IO](serviceConfiguration.databaseConfiguration)
 
-      _ <- httpApplication[IO](serviceConfiguration).use { httpApp =>
+      _ <- createApplicationResources[IO](serviceConfiguration).use { applicationResources =>
         BlazeServerBuilder[IO]
-          .withHttpWebSocketApp(httpApp)
+          .withHttpWebSocketApp(httpApplication(applicationResources, serviceConfiguration).run)
           .bindHttp(serviceConfiguration.httpConfiguration.port, serviceConfiguration.httpConfiguration.host)
           .serve
           .compile
@@ -46,40 +59,45 @@ object App extends IOApp {
 
     } yield ExitCode.Success
 
-  def httpApplication[F[_]: Async](
+  def createApplicationResources[F[_]: Async](
     serviceConfiguration: ServiceConfiguration
-  ): Resource[F, WebSocketBuilder2[F] => HttpApp[F]] =
-    Redis[F].utf8(serviceConfiguration.redisConfiguration.uri).flatMap { redisCommands =>
-      DoobieTransactor
-        .create(serviceConfiguration.databaseConfiguration)
-        .map(_.trans)
-        .map { implicit transaction =>
-          val passwordHashingService = new BcryptPasswordHashingService[F]
-          val keyValueStore = new RedisKeyValueStore[F](redisCommands)
+  ): Resource[F, ApplicationResources[F]] =
+    for {
+      redisCommands <- Redis[F].utf8(serviceConfiguration.redisConfiguration.uri)
+      kafkaProducer <- KafkaPublisher.createProducer[F](serviceConfiguration.kafkaConfiguration)
+      hikariTransactor <- DoobieTransactor.create(serviceConfiguration.databaseConfiguration)
+    } yield ApplicationResources(redisCommands, kafkaProducer, hikariTransactor)
 
-          val authenticationKeyValueStore =
-            new KeySpacedKeyValueStore[F, AuthenticationToken, AuthenticationTokenDetails](
-              keyValueStore,
-              KeySpace.AuthenticationKeySpace
-            )
+  def httpApplication[F[_]: Async: JodaClock](
+    applicationResources: ApplicationResources[F],
+    serviceConfiguration: ServiceConfiguration
+  ): Reader[WebSocketBuilder2[F], HttpApp[F]] = {
+    implicit val transaction: ConnectionIO ~> F = applicationResources.hikariTransactor.trans
+    val passwordHashingService = new BcryptPasswordHashingService[F]
+    val keyValueStore = new RedisKeyValueStore[F](applicationResources.redisCommands)
 
-          val authenticationService = new AuthenticationServiceImpl[F, ConnectionIO](
-            authenticationKeyValueStore,
-            passwordHashingService,
-            DoobieUserDao,
-            DoobieCredentialsDao
-          )
+    val authenticationKeyValueStore =
+      new KeySpacedKeyValueStore[F, AuthenticationToken, AuthenticationTokenDetails](
+        keyValueStore,
+        KeySpace.AuthenticationKeySpace
+      )
 
-          val userService =
-            new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
+    val authenticationService = new AuthenticationServiceImpl[F, ConnectionIO](
+      authenticationKeyValueStore,
+      passwordHashingService,
+      DoobieUserDao,
+      DoobieCredentialsDao
+    )
 
-          val messagingService = new MessagingServiceImpl[F](new InMemoryPublisher[F])
+    val userService =
+      new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
 
-          val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
+    val messagingService = new MessagingServiceImpl[F](new InMemoryPublisher[F])
 
-          webSocketBuilder =>
-            Routes[F](userService, authenticationService, messagingService, healthService, webSocketBuilder)
-        }
+    val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
 
+    Reader[WebSocketBuilder2[F], HttpApp[F]] { webSocketBuilder =>
+      Routes[F](userService, authenticationService, messagingService, healthService, webSocketBuilder)
     }
+  }
 }

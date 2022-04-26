@@ -3,6 +3,7 @@ package com.ruchij.config
 import cats.effect.IO
 import com.ruchij.migration.config.DatabaseConfiguration
 import com.ruchij.test.utils.IOUtils.{IOErrorOps, runIO}
+import org.http4s.implicits.http4sLiteralsSyntax
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
@@ -35,6 +36,12 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
             password = $${?REDIS_PASSWORD}
           }
 
+          kafka-configuration {
+            bootstrap-servers = "kafka-broker:9092"
+
+            schema-registry = "https://schema-registry:8081"
+          }
+
           http-configuration {
             host = "127.0.0.1"
             host = $${?HTTP_HOST}
@@ -64,6 +71,8 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
         serviceConfiguration.redisConfiguration mustBe RedisConfiguration("localhost", 6379, None)
 
         serviceConfiguration.httpConfiguration mustBe HttpConfiguration("127.0.0.1", 80)
+
+        serviceConfiguration.kafkaConfiguration mustBe KafkaConfiguration("kafka-broker:9092", uri"https://schema-registry:8081")
 
         serviceConfiguration.buildInformation mustBe
           BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))

@@ -1,9 +1,10 @@
-package com.ruchij.web.requests.ws
+package com.ruchij.web.ws
 
 import com.ruchij.services.authentication.models.AuthenticationToken
 import com.ruchij.services.messages.models.UserMessage
 import io.circe.generic.auto.exportDecoder
 import io.circe.{Decoder, HCursor, Json}
+import org.joda.time.DateTime
 
 sealed trait InboundMessage
 
@@ -28,9 +29,9 @@ object InboundMessage {
           decoder.decodeJson(typedWebSocketMessage.message)
         }
 
-  def toUserMessage(userId: String, webSocketMessage: InboundMessage): Option[UserMessage] =
+  def toUserMessage(userId: String, webSocketMessage: InboundMessage, timestamp: DateTime): Option[UserMessage] =
     webSocketMessage match {
-      case SendOneToOneMessageInbound(receiverId, message) => Some(UserMessage.OneToOne(userId, receiverId, message))
+      case SendOneToOneMessageInbound(receiverId, message) => Some(UserMessage.OneToOne(userId, timestamp, receiverId, message))
       case SendGroupMessageInbound(groupId, message) => Some(UserMessage.Group(userId, groupId, message))
       case _ => None
     }
