@@ -1,11 +1,11 @@
-package com.ruchij.pub.kafka
+package com.ruchij.pubsub.kafka
 
 import cats.effect.kernel.Resource
 import cats.effect.{Async, Sync}
 import cats.implicits.toFunctorOps
 import cats.~>
 import com.ruchij.config.KafkaConfiguration
-import com.ruchij.pub.Publisher
+import com.ruchij.pubsub.Publisher
 import com.ruchij.types.FunctionKTypes.WrappedFuture
 import fs2.Pipe
 import io.confluent.kafka.serializers.{AbstractKafkaSchemaSerDeConfig, KafkaAvroSerializer}

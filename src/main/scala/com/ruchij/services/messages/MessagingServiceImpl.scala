@@ -4,7 +4,7 @@ import cats.data.OptionT
 import cats.effect.kernel.Sync
 import cats.implicits._
 import com.ruchij.dao.user.models.User
-import com.ruchij.pub.Publisher
+import com.ruchij.pubsub.Publisher
 import com.ruchij.services.messages.models.UserMessage
 import fs2.Pipe
 import fs2.concurrent.Channel

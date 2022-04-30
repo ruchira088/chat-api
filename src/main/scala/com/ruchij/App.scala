@@ -12,8 +12,8 @@ import com.ruchij.dao.doobie.DoobieTransactor
 import com.ruchij.dao.user.DoobieUserDao
 import com.ruchij.kv.{KeySpace, KeySpacedKeyValueStore, RedisKeyValueStore}
 import com.ruchij.migration.MigrationApp
-import com.ruchij.pub.InMemoryPublisher
-import com.ruchij.pub.kafka.KafkaPublisher
+import com.ruchij.pubsub.InMemoryPublisher
+import com.ruchij.pubsub.kafka.KafkaPublisher
 import com.ruchij.services.authentication.AuthenticationServiceImpl
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
 import com.ruchij.services.hashing.BcryptPasswordHashingService
