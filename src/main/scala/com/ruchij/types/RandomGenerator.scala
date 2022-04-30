@@ -13,6 +13,11 @@ object RandomGenerator {
 
   def apply[F[_], A](implicit randomGenerator: RandomGenerator[F, A]): RandomGenerator[F, A] = randomGenerator
 
+  def apply[F[_]: Sync, A](block: => A): RandomGenerator[F, A] =
+    new RandomGenerator[F, A] {
+      override def generate[B >: A]: F[B] = Sync[F].delay(block)
+    }
+
   implicit def uuidGenerator[F[_]: Sync]: RandomGenerator[F, UUID] =
     new RandomGenerator[F, UUID] {
       override def generate[B >: UUID]: F[B] = Sync[F].delay(UUID.randomUUID())

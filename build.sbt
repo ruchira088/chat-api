@@ -54,6 +54,8 @@ lazy val root =
           kafkaAvroSerializer,
           chatAvroSchemas,
           pureconfig,
+          embeddedRedis,
+          embeddedKafkaSchemaRegistry,
           logbackClassic,
           scalaLogging
         ) ++
@@ -61,6 +63,7 @@ lazy val root =
       resolvers ++=
         Seq(
           "Confluent" at "https://packages.confluent.io/maven/",
+          "jitpack" at "https://jitpack.io",
           "JFrog Artifactory" at "https://ruchij.jfrog.io/artifactory/default-maven-virtual/"
         ),
       credentials += {

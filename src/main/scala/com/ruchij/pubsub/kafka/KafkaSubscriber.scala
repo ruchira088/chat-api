@@ -6,22 +6,22 @@ import com.ruchij.config.KafkaConfiguration
 import com.ruchij.pubsub.Subscriber
 import com.ruchij.pubsub.models.CommittableRecord
 import com.ruchij.types.FunctionKTypes.WrappedFuture
-import org.apache.avro.specific.SpecificRecord
 import fs2.Stream
-import io.confluent.kafka.serializers.{AbstractKafkaSchemaSerDeConfig, KafkaAvroDeserializer}
+import io.confluent.kafka.serializers.{AbstractKafkaSchemaSerDeConfig, KafkaAvroDeserializer, KafkaAvroDeserializerConfig}
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 
 import java.time.Duration
 import java.util
-import scala.jdk.CollectionConverters._
 import java.util.Properties
 import scala.concurrent.Promise
+import scala.jdk.CollectionConverters._
 
 class KafkaSubscriber[F[_]: Sync, A, B <: SpecificRecord](
-  kafkaTopic: KafkaTopic[A, B],
-  kafkaConfiguration: KafkaConfiguration
+  kafkaConfiguration: KafkaConfiguration,
+  kafkaTopic: KafkaTopic[A, B]
 )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F)
     extends Subscriber[F, A] {
 
@@ -34,6 +34,8 @@ class KafkaSubscriber[F[_]: Sync, A, B <: SpecificRecord](
       put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[KafkaAvroDeserializer].getName)
 
       put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+      put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true)
+      put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
     }
 
   override def subscribe(groupId: String): Stream[F, CommittableRecord[F, A]] =

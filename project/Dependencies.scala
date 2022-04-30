@@ -42,6 +42,10 @@ object Dependencies
 
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 
+  lazy val embeddedRedis = "com.github.kstyrc" % "embedded-redis" % "0.6"
+
+  lazy val embeddedKafkaSchemaRegistry = "io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "7.1.0"
+
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.11"
 
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
