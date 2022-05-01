@@ -54,7 +54,7 @@ class KafkaSubscriber[F[_]: Sync, A, B <: SpecificRecord](
         Stream
           .eval(Sync[F].blocking(kafkaConsumer.poll(Duration.ofMillis(100))))
           .flatMap { consumerRecords =>
-            Stream.emits(consumerRecords.records(kafkaTopic.name).asScala.toSeq)
+            Stream.emits(consumerRecords.iterator().asScala.toSeq)
           }
           .repeat
           .map { consumerRecord =>

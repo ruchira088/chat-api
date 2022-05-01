@@ -36,7 +36,7 @@ object Dependencies
 
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "3.1.0"
 
-  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.0"
+  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.1"
 
   lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0-SNAPSHOT"
 
