@@ -1,13 +1,15 @@
 package com.ruchij.kv
 
-import cats.Monad
+import cats.MonadThrow
 import cats.implicits._
-import com.ruchij.kv.codecs.{KVDecoder, KVEncoder}
+import com.ruchij.kv.codecs.KVEncoder
 
-class KeySpacedKeyValueStore[F[_]: Monad, K: KVEncoder[F, *], V: KVEncoder[F, *]: KVDecoder[F, *]](
+class KeySpacedKeyValueStore[F[_]: MonadThrow, K, V](
   val keyValueStore: KeyValueStore[F],
   keySpace: KeySpace[K, V]
 ) {
+  import keySpace._
+
   private def deriveKey(key: K): F[String] =
     KVEncoder[F, K].encode(key).map(encodedKey => s"${keySpace.name}-$encodedKey")
 

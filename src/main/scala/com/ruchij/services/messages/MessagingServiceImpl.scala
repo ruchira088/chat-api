@@ -3,6 +3,7 @@ package com.ruchij.services.messages
 import cats.data.OptionT
 import cats.effect.kernel.Sync
 import cats.implicits._
+import com.ruchij.config.InstanceConfiguration
 import com.ruchij.dao.user.models.User
 import com.ruchij.pubsub.Publisher
 import com.ruchij.services.messages.models.UserMessage
@@ -11,7 +12,10 @@ import fs2.concurrent.Channel
 
 import java.util.concurrent.ConcurrentHashMap
 
-class MessagingServiceImpl[F[_]: Sync](publisher: Publisher[F, UserMessage]) extends MessagingService[F] {
+class MessagingServiceImpl[F[_]: Sync](
+  publisher: Publisher[F, UserMessage],
+  instanceConfiguration: InstanceConfiguration
+) extends MessagingService[F] {
 
   private val userIdToChannelMappings = new ConcurrentHashMap[String, Channel[F, UserMessage]]()
 
@@ -23,8 +27,12 @@ class MessagingServiceImpl[F[_]: Sync](publisher: Publisher[F, UserMessage]) ext
 
   override def sendToUser(userId: String, userMessage: UserMessage): F[Boolean] =
     OptionT(Sync[F].delay(Option(userIdToChannelMappings.get(userId))))
-      .semiflatMap { channel => channel.send(userMessage) }
-      .map { result => result.fold(_ => false, _ => true) }
+      .semiflatMap { channel =>
+        channel.send(userMessage)
+      }
+      .map { result =>
+        result.fold(_ => false, _ => true)
+      }
       .getOrElse(false)
 
   override val submit: Pipe[F, UserMessage, Unit] = publisher.publish

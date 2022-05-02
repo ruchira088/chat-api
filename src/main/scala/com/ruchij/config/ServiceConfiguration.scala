@@ -14,6 +14,7 @@ case class ServiceConfiguration(
   redisConfiguration: RedisConfiguration,
   kafkaConfiguration: KafkaConfiguration,
   httpConfiguration: HttpConfiguration,
+  instanceConfiguration: InstanceConfiguration,
   buildInformation: BuildInformation
 )
 

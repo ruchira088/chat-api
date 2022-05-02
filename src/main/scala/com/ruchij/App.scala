@@ -4,8 +4,6 @@ import cats.data.Reader
 import cats.effect.kernel.Resource
 import cats.effect.{Async, ExitCode, IO, IOApp}
 import cats.~>
-import com.ruchij.circe.Decoders.{authenticationTokenDecoder, dateTimeDecoder}
-import com.ruchij.circe.Encoders.{authenticationTokenEncoder, dateTimeEncoder}
 import com.ruchij.config.ServiceConfiguration
 import com.ruchij.dao.credentials.DoobieCredentialsDao
 import com.ruchij.dao.doobie.DoobieTransactor
@@ -26,7 +24,6 @@ import dev.profunktor.redis4cats.effect.Log.Stdout.instance
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
-import io.circe.generic.auto._
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.http4s.HttpApp
@@ -92,7 +89,7 @@ object App extends IOApp {
     val userService =
       new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
 
-    val messagingService = new MessagingServiceImpl[F](new InMemoryPublisher[F])
+    val messagingService = new MessagingServiceImpl[F](new InMemoryPublisher[F], serviceConfiguration.instanceConfiguration)
 
     val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
 
