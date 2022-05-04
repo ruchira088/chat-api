@@ -6,12 +6,14 @@ import io.circe.generic.auto.exportDecoder
 import io.circe.{Decoder, HCursor, Json}
 import org.joda.time.DateTime
 
-sealed trait InboundMessage
+sealed trait InboundMessage {
+  val messageId: String
+}
 
 object InboundMessage {
-  case class Authentication(authenticationToken: AuthenticationToken) extends InboundMessage
-  case class SendOneToOneMessageInbound(receiverId: String, message: String) extends InboundMessage
-  case class SendGroupMessageInbound(groupId: String, message: String) extends InboundMessage
+  case class Authentication(messageId: String, authenticationToken: AuthenticationToken) extends InboundMessage
+  case class SendOneToOneMessageInbound(messageId: String, receiverId: String, message: String) extends InboundMessage
+  case class SendGroupMessageInbound(messageId: String, groupId: String, message: String) extends InboundMessage
 
   private case class TypedWebSocketMessage(messageType: MessageType, message: Json)
 
@@ -31,8 +33,12 @@ object InboundMessage {
 
   def toUserMessage(userId: String, webSocketMessage: InboundMessage, timestamp: DateTime): Option[UserMessage] =
     webSocketMessage match {
-      case SendOneToOneMessageInbound(receiverId, message) => Some(UserMessage.OneToOne(userId, timestamp, receiverId, message))
-      case SendGroupMessageInbound(groupId, message) => Some(UserMessage.Group(userId, groupId, message))
+      case SendOneToOneMessageInbound(messageId, receiverId, message) =>
+        Some(UserMessage.OneToOne(messageId, userId, timestamp, receiverId, message))
+
+      case SendGroupMessageInbound(messageId, groupId, message) =>
+        Some(UserMessage.Group(messageId, userId, timestamp, groupId, message))
+
       case _ => None
     }
 

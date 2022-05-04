@@ -15,6 +15,7 @@ case class ServiceConfiguration(
   kafkaConfiguration: KafkaConfiguration,
   httpConfiguration: HttpConfiguration,
   instanceConfiguration: InstanceConfiguration,
+  authenticationConfiguration: AuthenticationConfiguration,
   buildInformation: BuildInformation
 )
 

@@ -40,6 +40,7 @@ lazy val root =
           http4sDsl,
           http4sBlazeServer,
           http4sCirce,
+          http4sBlazeClient,
           circeGeneric,
           circeParser,
           circeLiteral,

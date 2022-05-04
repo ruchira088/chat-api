@@ -24,6 +24,7 @@ object KafkaTopic {
     override def toSpecificRecord(oneToOne: OneToOne): OneToOneMessage =
       OneToOneMessage
         .newBuilder()
+        .setMessageId(oneToOne.messageId)
         .setSenderId(oneToOne.senderId)
         .setReceiverId(oneToOne.receiverId)
         .setMessage(oneToOne.message)
@@ -34,6 +35,7 @@ object KafkaTopic {
 
     override def fromSpecificRecord(record: OneToOneMessage): OneToOne =
       OneToOne(
+        record.getMessageId.toString,
         record.getSenderId.toString,
         new DateTime(record.getSentAt.toEpochMilli),
         record.getReceiverId.toString,

@@ -14,6 +14,8 @@ object Dependencies
 
   lazy val http4sCirce = "org.http4s" %% "http4s-circe" % Http4sVersion
 
+  lazy val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % Http4sVersion
+
   lazy val circeGeneric = "io.circe" %% "circe-generic" % CirceVersion
 
   lazy val circeParser = "io.circe" %% "circe-parser" % CirceVersion
@@ -38,7 +40,7 @@ object Dependencies
 
   lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.1"
 
-  lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0-SNAPSHOT"
+  lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0.1"
 
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 

@@ -3,6 +3,7 @@ package com.ruchij.kv
 import cats.{Applicative, ApplicativeError}
 import com.ruchij.circe.Decoders.{authenticationTokenDecoder, dateTimeDecoder}
 import com.ruchij.circe.Encoders.{authenticationTokenEncoder, dateTimeEncoder}
+import com.ruchij.config.InstanceConfiguration
 import com.ruchij.kv.codecs.{KVDecoder, KVEncoder}
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
 import io.circe.generic.auto.{exportDecoder, exportEncoder}
@@ -26,5 +27,9 @@ abstract class KeySpace[K, V](
 object KeySpace {
   case object AuthenticationKeySpace extends KeySpace[AuthenticationToken, AuthenticationTokenDetails] {
     override val name: String = "authentication"
+  }
+
+  case object UserSessionKeySpace extends KeySpace[String, InstanceConfiguration] {
+    override val name: String = "user-session"
   }
 }

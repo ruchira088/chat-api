@@ -58,7 +58,7 @@ object WebSocketRoutes {
                     case _ => Stream.empty
                   }
                   .flatMap {
-                    case InboundMessage.Authentication(authenticationToken) =>
+                    case InboundMessage.Authentication(_, authenticationToken) =>
                       Stream.eval { authenticationService.authenticate(authenticationToken).flatMap(deferred.complete) }
                         .productR(Stream.empty)
 

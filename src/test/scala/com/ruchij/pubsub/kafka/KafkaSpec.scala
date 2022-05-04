@@ -30,7 +30,7 @@ class KafkaSpec extends AnyFlatSpec with Matchers {
               Stream.range[IO, Int](0, 10)
                 .evalMap { index =>
                   JodaClock[IO].timestamp.map { timestamp =>
-                    OneToOne("my-sender", timestamp, "my-receiver", index.toString)
+                    OneToOne(index.toString, "my-sender", timestamp, "my-receiver", s"Hello World $index")
                   }
                 }
             }
@@ -43,7 +43,8 @@ class KafkaSpec extends AnyFlatSpec with Matchers {
               records.size mustBe 10
               all(records.map(_.data.senderId)) mustBe "my-sender"
               all(records.map(_.data.receiverId)) mustBe "my-receiver"
-              records.map(_.data.message) mustBe Range(0, 10).map(_.toString)
+              records.map(_.data.messageId) mustBe Range(0, 10).map(_.toString)
+              records.map(_.data.message) mustBe Range(0, 10).map(index => s"Hello World $index")
               records.map(_.data.sentAt.getMillis) mustBe sorted
             }
           }

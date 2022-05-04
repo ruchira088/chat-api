@@ -56,7 +56,13 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
 
              port = 8000
              port = $${?HTTP_PORT}
-}
+          }
+
+          authentication-configuration {
+            service-token = "my-token"
+            service-token = $${?SERVICE_TOKEN}
+          }
+
           build-information {
             git-branch = "my-branch"
 
@@ -82,6 +88,8 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
         serviceConfiguration.kafkaConfiguration mustBe KafkaConfiguration("kafka-broker:9092", uri"https://schema-registry:8081")
 
         serviceConfiguration.instanceConfiguration mustBe InstanceConfiguration("localhost", 8000)
+
+        serviceConfiguration.authenticationConfiguration mustBe AuthenticationConfiguration("my-token")
 
         serviceConfiguration.buildInformation mustBe
           BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))

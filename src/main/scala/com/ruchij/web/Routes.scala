@@ -6,7 +6,7 @@ import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.user.UserService
 import com.ruchij.web.middleware.{ExceptionHandler, NotFoundHandler}
-import com.ruchij.web.routes.{AuthenticationRoutes, HealthRoutes, UserRoutes, WebSocketRoutes}
+import com.ruchij.web.routes._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.server.middleware.GZip
@@ -19,7 +19,8 @@ object Routes {
     authenticationService: AuthenticationService[F],
     messagingService: MessagingService[F],
     healthService: HealthService[F],
-    webSocketBuilder2: WebSocketBuilder2[F]
+    webSocketBuilder2: WebSocketBuilder2[F],
+    serviceToken: String
   ): HttpApp[F] = {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F] {}
 
@@ -28,6 +29,7 @@ object Routes {
         "/user" -> UserRoutes(userService),
         "/authentication" -> AuthenticationRoutes(authenticationService),
         "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
+        "/push" -> PushRoutes(messagingService, serviceToken),
         "/service" -> HealthRoutes(healthService)
       )
 

@@ -18,10 +18,11 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
   val messagingService: MessagingService[F] = mock[MessagingService[F]]
   val healthService: HealthService[F] = mock[HealthService[F]]
   val webSocketBuilder2: WebSocketBuilder2[F] = null
+  val serviceToken = "my-token"
 
   val async: Async[F]
 
   def createRoutes(): HttpApp[F] =
-    Routes[F](userService, authenticationService, messagingService, healthService, webSocketBuilder2)(async)
+    Routes[F](userService, authenticationService, messagingService, healthService, webSocketBuilder2, serviceToken)(async)
 
 }
