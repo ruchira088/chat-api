@@ -5,6 +5,7 @@ import cats.implicits._
 import com.ruchij.circe.Decoders.dateTimeDecoder
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.UserMessage
+import com.ruchij.services.messages.models.UserMessage.userMessageDecoder
 import com.ruchij.web.middleware.ServiceAuthenticator
 import com.ruchij.web.requests.RequestOps
 import com.ruchij.web.responses.PushResponse

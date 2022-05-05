@@ -1,5 +1,6 @@
 package com.ruchij.services.messages.models
 
+import io.circe.Decoder
 import org.joda.time.DateTime
 
 sealed trait UserMessage {
@@ -15,4 +16,10 @@ object UserMessage {
 
   case class Group(messageId: String, senderId: String, sentAt: DateTime, groupId: String, message: String)
       extends UserMessage
+
+  implicit def userMessageDecoder(
+    implicit oneToOneDecoder: Decoder[OneToOne],
+    groupDecoder: Decoder[Group]
+  ): Decoder[UserMessage] =
+    oneToOneDecoder.map(identity[UserMessage]).or { groupDecoder.map(identity[UserMessage]) }
 }
