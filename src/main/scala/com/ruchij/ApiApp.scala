@@ -113,7 +113,8 @@ object ApiApp extends IOApp {
         kafkaPublisher(applicationResources.kafkaProducer),
         userSessionKeyValueStore,
         applicationResources.httpClient,
-        serviceConfiguration.instanceConfiguration
+        serviceConfiguration.instanceConfiguration,
+        serviceConfiguration.authenticationConfiguration.serviceAuthentication
       )
 
     val healthService = new HealthServiceImpl[F](serviceConfiguration.buildInformation)
@@ -125,7 +126,7 @@ object ApiApp extends IOApp {
         messagingService,
         healthService,
         webSocketBuilder,
-        serviceConfiguration.authenticationConfiguration.serviceToken
+        serviceConfiguration.authenticationConfiguration.serviceAuthentication
       )
     }
   }

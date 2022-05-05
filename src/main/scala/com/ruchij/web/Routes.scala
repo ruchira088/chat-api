@@ -1,6 +1,7 @@
 package com.ruchij.web
 
 import cats.effect.Async
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
@@ -20,7 +21,7 @@ object Routes {
     messagingService: MessagingService[F],
     healthService: HealthService[F],
     webSocketBuilder2: WebSocketBuilder2[F],
-    serviceToken: String
+    serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration
   ): HttpApp[F] = {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F] {}
 
@@ -29,7 +30,7 @@ object Routes {
         "/user" -> UserRoutes(userService),
         "/authentication" -> AuthenticationRoutes(authenticationService),
         "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
-        "/push" -> PushRoutes(messagingService, serviceToken),
+        "/push" -> PushRoutes(messagingService, serviceAuthenticationConfiguration),
         "/service" -> HealthRoutes(healthService)
       )
 

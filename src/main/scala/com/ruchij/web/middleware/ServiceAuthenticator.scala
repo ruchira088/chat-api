@@ -2,6 +2,7 @@ package com.ruchij.web.middleware
 
 import cats.data.{Kleisli, OptionT}
 import cats.{Applicative, ApplicativeError, MonadThrow}
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.exceptions.AuthenticationException
 import org.http4s.headers.Authorization
 import org.http4s.server.HttpMiddleware
@@ -10,7 +11,7 @@ import org.typelevel.ci.CIStringSyntax
 
 object ServiceAuthenticator {
 
-  def apply[F[_]: MonadThrow](serviceToken: String): HttpMiddleware[F] =
+  def apply[F[_]: MonadThrow](serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration): HttpMiddleware[F] =
     httpRoutes =>
       Kleisli[OptionT[F, *], Request[F], Response[F]] { request =>
         for {
@@ -24,7 +25,7 @@ object ServiceAuthenticator {
               )(token => OptionT.pure(token))
 
           _ <-
-            if (token == serviceToken) OptionT.liftF(Applicative[F].unit)
+            if (token == serviceAuthenticationConfiguration.token) OptionT.liftF(Applicative[F].unit)
             else OptionT.liftF[F, Unit] {
               ApplicativeError[F, Throwable].raiseError {
                 AuthenticationException("Invalid credentials")

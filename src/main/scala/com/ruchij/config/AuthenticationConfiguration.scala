@@ -1,3 +1,9 @@
 package com.ruchij.config
 
-case class AuthenticationConfiguration(serviceToken: String)
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
+
+case class AuthenticationConfiguration(serviceAuthentication: ServiceAuthenticationConfiguration)
+
+object AuthenticationConfiguration {
+  case class ServiceAuthenticationConfiguration(token: String)
+}

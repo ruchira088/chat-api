@@ -3,6 +3,7 @@ package com.ruchij.web.routes
 import cats.effect.Async
 import cats.implicits._
 import com.ruchij.circe.Decoders.dateTimeDecoder
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.UserMessage
 import com.ruchij.services.messages.models.UserMessage.userMessageDecoder
@@ -16,18 +17,20 @@ import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
 
 object PushRoutes {
-  def apply[F[_]: Async](messagingService: MessagingService[F], serviceToken: String)(implicit dsl: Http4sDsl[F]): HttpRoutes[F] = {
+  def apply[F[_]: Async](
+    messagingService: MessagingService[F],
+    serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration
+  )(implicit dsl: Http4sDsl[F]): HttpRoutes[F] = {
     import dsl._
 
-    ServiceAuthenticator[F](serviceToken).apply {
+    ServiceAuthenticator[F](serviceAuthenticationConfiguration).apply {
       HttpRoutes.of {
         case request @ POST -> Root =>
           for {
             userMessage <- request.to[UserMessage]
             success <- messagingService.sendToUser(userMessage.senderId, userMessage)
             response <- if (success) Accepted(PushResponse(true)) else NotAcceptable(PushResponse(false))
-          }
-          yield response
+          } yield response
       }
     }
   }

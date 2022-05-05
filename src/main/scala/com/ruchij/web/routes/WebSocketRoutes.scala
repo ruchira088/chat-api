@@ -44,7 +44,7 @@ object WebSocketRoutes {
                 channel <- Stream.eval(Channel.unbounded[F, UserMessage])
                 _ <- Stream.eval(messagingService.register(user, channel))
                 userMessage <- channel.stream
-              } yield WebSocketFrame.Text(Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces, last = false),
+              } yield WebSocketFrame.Text(Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces),
               input =>
                 input
                   .flatMap {

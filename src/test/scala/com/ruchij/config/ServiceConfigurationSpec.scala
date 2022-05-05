@@ -1,6 +1,7 @@
 package com.ruchij.config
 
 import cats.effect.IO
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.migration.config.DatabaseConfiguration
 import com.ruchij.test.utils.IOUtils.{IOErrorOps, runIO}
 import org.http4s.implicits.http4sLiteralsSyntax
@@ -59,8 +60,10 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
           }
 
           authentication-configuration {
-            service-token = "my-token"
-            service-token = $${?SERVICE_TOKEN}
+            service-authentication {
+                token = "my-token"
+                token = $${?SERVICE_TOKEN}
+            }
           }
 
           build-information {
@@ -89,7 +92,8 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
 
         serviceConfiguration.instanceConfiguration mustBe InstanceConfiguration("localhost", 8000)
 
-        serviceConfiguration.authenticationConfiguration mustBe AuthenticationConfiguration("my-token")
+        serviceConfiguration.authenticationConfiguration mustBe
+          AuthenticationConfiguration(ServiceAuthenticationConfiguration("my-token"))
 
         serviceConfiguration.buildInformation mustBe
           BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))

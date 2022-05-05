@@ -1,6 +1,7 @@
 package com.ruchij.test.mixins
 
 import cats.effect.Async
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
@@ -18,11 +19,18 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
   val messagingService: MessagingService[F] = mock[MessagingService[F]]
   val healthService: HealthService[F] = mock[HealthService[F]]
   val webSocketBuilder2: WebSocketBuilder2[F] = null
-  val serviceToken = "my-token"
+  val serviceAuthenticationConfiguration = mock[ServiceAuthenticationConfiguration]
 
   val async: Async[F]
 
   def createRoutes(): HttpApp[F] =
-    Routes[F](userService, authenticationService, messagingService, healthService, webSocketBuilder2, serviceToken)(async)
+    Routes[F](
+      userService,
+      authenticationService,
+      messagingService,
+      healthService,
+      webSocketBuilder2,
+      serviceAuthenticationConfiguration
+    )(async)
 
 }

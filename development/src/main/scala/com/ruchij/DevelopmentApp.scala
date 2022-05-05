@@ -3,6 +3,7 @@ package com.ruchij
 import cats.Monad
 import cats.effect.kernel.Resource
 import cats.effect.{ExitCode, IO, IOApp}
+import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.config._
 import com.ruchij.external.ExternalServiceProvider
 import com.ruchij.external.embedded.EmbeddedExternalServiceProvider
@@ -25,7 +26,7 @@ object DevelopmentApp extends IOApp {
       timestamp <- Resource.eval(JodaClock[F].timestamp)
       httpConfiguration = HttpConfiguration("0.0.0.0", 8000)
       instanceConfiguration = InstanceConfiguration("localhost", 8000)
-      authenticationConfiguration = AuthenticationConfiguration("my-service-token")
+      authenticationConfiguration = AuthenticationConfiguration(ServiceAuthenticationConfiguration("my-service-token"))
       buildInformation = BuildInformation(Some("my-branch"), Some("my-commit"), Some(timestamp))
 
       serviceConfiguration = ServiceConfiguration(
