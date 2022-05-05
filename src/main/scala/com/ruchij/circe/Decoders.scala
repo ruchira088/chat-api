@@ -11,7 +11,8 @@ import scala.util.Try
 
 object Decoders {
   implicit val dateTimeDecoder: Decoder[DateTime] =
-    Decoder.decodeString.emapTry(dateTimeString => Try(DateTime.parse(dateTimeString)))
+    Decoder.decodeLong.map(epoch => new DateTime(epoch))
+      .or { Decoder.decodeString.emapTry(dateTimeString => Try(DateTime.parse(dateTimeString))) }
 
   private def stringWrapperDecoder[A](implicit generic: Generic.Aux[A, String :: HNil]): Decoder[A] =
     Decoder.decodeString.emap { value =>
