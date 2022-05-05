@@ -4,6 +4,7 @@ import cats.data.Reader
 import cats.effect.kernel.Resource
 import cats.effect.{Async, ExitCode, IO, IOApp}
 import cats.~>
+import cats.implicits._
 import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.config.{InstanceConfiguration, ServiceConfiguration}
 import com.ruchij.dao.credentials.DoobieCredentialsDao
@@ -38,7 +39,7 @@ import org.http4s.client.Client
 import org.http4s.server.websocket.WebSocketBuilder2
 import pureconfig.ConfigSource
 
-object App extends IOApp {
+object ApiApp extends IOApp {
   case class ApplicationResources[F[_]](
     httpClient: Client[F],
     redisCommands: RedisCommands[F, String, String],
@@ -50,19 +51,24 @@ object App extends IOApp {
     for {
       configObjectSource <- IO.delay(ConfigSource.defaultApplication)
       serviceConfiguration <- ServiceConfiguration.parse[IO](configObjectSource)
+      exitCode <- run[IO](serviceConfiguration)
+    } yield exitCode
 
-      _ <- MigrationApp.migrate[IO](serviceConfiguration.databaseConfiguration)
-
-      _ <- createApplicationResources[IO](serviceConfiguration).use { applicationResources =>
-        BlazeServerBuilder[IO]
-          .withHttpWebSocketApp(httpApplication(applicationResources, serviceConfiguration).run)
-          .bindHttp(serviceConfiguration.httpConfiguration.port, serviceConfiguration.httpConfiguration.host)
-          .serve
-          .compile
-          .drain
+  def run[F[_]: Async: JodaClock](
+    serviceConfiguration: ServiceConfiguration
+  )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): F[ExitCode] =
+    MigrationApp
+      .migrate[F](serviceConfiguration.databaseConfiguration)
+      .productR {
+        createApplicationResources[F](serviceConfiguration).use { applicationResources =>
+          BlazeServerBuilder[F]
+            .withHttpWebSocketApp(httpApplication(applicationResources, serviceConfiguration).run)
+            .bindHttp(serviceConfiguration.httpConfiguration.port, serviceConfiguration.httpConfiguration.host)
+            .serve
+            .compile
+            .lastOrError
+        }
       }
-
-    } yield ExitCode.Success
 
   def createApplicationResources[F[_]: Async](
     serviceConfiguration: ServiceConfiguration
@@ -135,7 +141,7 @@ object App extends IOApp {
         input =>
           input.flatMap {
             case oneToOne: OneToOne => oneToOnePublisher.publish(Stream.emit[F, OneToOne](oneToOne))
-            case group: Group => Stream.raiseError(new NotImplementedError("Group messages are NOT supported"))
+            case group: Group => Stream.raiseError[F](new NotImplementedError("Group messages are NOT supported"))
         }
     }
   }
