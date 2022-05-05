@@ -4,26 +4,31 @@ import cats.data.Reader
 import cats.effect.kernel.Resource
 import cats.effect.{Async, ExitCode, IO, IOApp}
 import cats.~>
+import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.config.{InstanceConfiguration, ServiceConfiguration}
 import com.ruchij.dao.credentials.DoobieCredentialsDao
 import com.ruchij.dao.doobie.DoobieTransactor
 import com.ruchij.dao.user.DoobieUserDao
 import com.ruchij.kv.{KeySpace, KeySpacedKeyValueStore, RedisKeyValueStore}
 import com.ruchij.migration.MigrationApp
-import com.ruchij.pubsub.InMemoryPublisher
-import com.ruchij.pubsub.kafka.KafkaPublisher
+import com.ruchij.pubsub.Publisher
+import com.ruchij.pubsub.kafka.{KafkaPublisher, KafkaTopic}
 import com.ruchij.services.authentication.AuthenticationServiceImpl
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
 import com.ruchij.services.hashing.BcryptPasswordHashingService
 import com.ruchij.services.health.HealthServiceImpl
 import com.ruchij.services.messages.MessagingServiceImpl
+import com.ruchij.services.messages.models.UserMessage
+import com.ruchij.services.messages.models.UserMessage.{Group, OneToOne}
 import com.ruchij.services.user.UserServiceImpl
+import com.ruchij.types.FunctionKTypes.{WrappedFuture, ioFutureToIO}
 import com.ruchij.types.JodaClock
 import com.ruchij.web.Routes
 import dev.profunktor.redis4cats.effect.Log.Stdout.instance
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
+import fs2.{Pipe, Stream}
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.http4s.HttpApp
@@ -72,7 +77,7 @@ object App extends IOApp {
   def httpApplication[F[_]: Async: JodaClock](
     applicationResources: ApplicationResources[F],
     serviceConfiguration: ServiceConfiguration
-  ): Reader[WebSocketBuilder2[F], HttpApp[F]] = {
+  )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): Reader[WebSocketBuilder2[F], HttpApp[F]] = {
     implicit val transaction: ConnectionIO ~> F = applicationResources.hikariTransactor.trans
     val passwordHashingService = new BcryptPasswordHashingService[F]
     val keyValueStore = new RedisKeyValueStore[F](applicationResources.redisCommands)
@@ -99,7 +104,7 @@ object App extends IOApp {
 
     val messagingService =
       new MessagingServiceImpl[F](
-        new InMemoryPublisher[F],
+        kafkaPublisher(applicationResources.kafkaProducer),
         userSessionKeyValueStore,
         applicationResources.httpClient,
         serviceConfiguration.instanceConfiguration
@@ -116,6 +121,22 @@ object App extends IOApp {
         webSocketBuilder,
         serviceConfiguration.authenticationConfiguration.serviceToken
       )
+    }
+  }
+
+  def kafkaPublisher[F[_]: Async](
+    kafkaProducer: KafkaProducer[String, SpecificRecord]
+  )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): Publisher[F, UserMessage] = {
+    val oneToOnePublisher =
+      new KafkaPublisher[F, OneToOne, OneToOneMessage](kafkaProducer, KafkaTopic.OneToOneMessageTopic)
+
+    new Publisher[F, UserMessage] {
+      override val publish: Pipe[F, UserMessage, Unit] =
+        input =>
+          input.flatMap {
+            case oneToOne: OneToOne => oneToOnePublisher.publish(Stream.emit[F, OneToOne](oneToOne))
+            case group: Group => Stream.raiseError(new NotImplementedError("Group messages are NOT supported"))
+        }
     }
   }
 }

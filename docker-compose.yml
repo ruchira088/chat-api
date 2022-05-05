@@ -32,6 +32,23 @@ services:
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
       REDIS_PASSWORD: "my-redis-password"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CHAT_API_HOSTNAME: "chat-api"
+      SERVICE_TOKEN: "my-service-token"
+
+  chat-worker:
+    image: chat-worker:latest
+    depends_on:
+      kafka-broker:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      API_SERVICE_URL: "http://chat-api:8000"
+      API_AUTHENTICATION_TOKEN: "my-service-token"
 
   chat-migration-app:
     image: chat-migration-app:latest
@@ -110,6 +127,7 @@ services:
       start_period: 10s
       interval: 10s
       timeout: 5s
+      retries: 10
     depends_on:
       kafka-broker:
         condition: service_healthy

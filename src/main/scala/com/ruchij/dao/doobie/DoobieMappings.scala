@@ -1,21 +1,17 @@
 package com.ruchij.dao.doobie
 
-import doobie.implicits.javatimedrivernative.JavaZonedDateTimeMeta
+import doobie.implicits.javasql.TimestampMeta
 import doobie.util.{Get, Put}
-import org.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.DateTime
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.sql.Timestamp
 
 object DoobieMappings {
 
   implicit val jodaTimeGet: Get[DateTime] =
-    Get[ZonedDateTime].map { zonedDateTime =>
-      new DateTime(zonedDateTime.toEpochSecond, DateTimeZone.forID(zonedDateTime.getZone.getId))
-    }
+    Get[Timestamp].map { timestamp => new DateTime(timestamp) }
 
   implicit val jodaTimePut: Put[DateTime] =
-    Put[ZonedDateTime].tcontramap { dateTime =>
-      ZonedDateTime.ofInstant(Instant.ofEpochMilli(dateTime.getMillis), ZoneId.of(dateTime.getZone.getID))
-    }
+    Put[Timestamp].tcontramap { dateTime => new Timestamp(dateTime.getMillis) }
 
 }
