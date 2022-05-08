@@ -8,6 +8,7 @@ import com.ruchij.dao.user.models.User
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.UserMessage
+import com.ruchij.services.messages.models.UserMessage.userMessageEncoder
 import com.ruchij.types.FunctionKTypes._
 import com.ruchij.types.{JodaClock, Logger}
 import com.ruchij.web.ws.{InboundMessage, OutboundMessage}
@@ -43,8 +44,14 @@ object WebSocketRoutes {
                 user <- Stream.eval(deferred.get)
                 channel <- Stream.eval(Channel.unbounded[F, UserMessage])
                 _ <- Stream.eval(messagingService.register(user, channel))
+
                 userMessage <- channel.stream
-              } yield WebSocketFrame.Text(Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces),
+
+                webSocketFrame =
+                  WebSocketFrame.Text {
+                    Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces
+                  }
+              } yield webSocketFrame,
               input =>
                 input
                   .flatMap {

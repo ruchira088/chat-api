@@ -1,6 +1,7 @@
 package com.ruchij.web
 
 import cats.effect.Async
+import cats.implicits.toSemigroupKOps
 import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.health.HealthService
@@ -12,7 +13,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.server.middleware.GZip
 import org.http4s.server.websocket.WebSocketBuilder2
-import org.http4s.{HttpApp, HttpRoutes}
+import org.http4s.{HttpApp, HttpRoutes, StaticFile}
 
 object Routes {
   def apply[F[_]: Async](
@@ -26,13 +27,14 @@ object Routes {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F] {}
 
     val routes: HttpRoutes[F] =
-      Router(
-        "/user" -> UserRoutes(userService),
-        "/authentication" -> AuthenticationRoutes(authenticationService),
-        "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
-        "/push" -> PushRoutes(messagingService, serviceAuthenticationConfiguration),
-        "/service" -> HealthRoutes(healthService)
-      )
+      ResourceRoutes[F] <+>
+        Router(
+          "/user" -> UserRoutes(userService),
+          "/authentication" -> AuthenticationRoutes(authenticationService),
+          "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
+          "/push" -> PushRoutes(messagingService, serviceAuthenticationConfiguration),
+          "/service" -> HealthRoutes(healthService)
+        )
 
     GZip {
       ExceptionHandler {

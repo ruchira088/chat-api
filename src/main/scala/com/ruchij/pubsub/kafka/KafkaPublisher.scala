@@ -2,11 +2,12 @@ package com.ruchij.pubsub.kafka
 
 import cats.effect.kernel.Resource
 import cats.effect.{Async, Sync}
-import cats.implicits.toFunctorOps
+import cats.implicits._
 import cats.~>
 import com.ruchij.config.KafkaConfiguration
 import com.ruchij.pubsub.Publisher
 import com.ruchij.types.FunctionKTypes.WrappedFuture
+import com.ruchij.types.Logger
 import fs2.Pipe
 import io.confluent.kafka.serializers.{AbstractKafkaSchemaSerDeConfig, KafkaAvroSerializer}
 import org.apache.avro.specific.SpecificRecord
@@ -19,6 +20,8 @@ import scala.concurrent.Promise
 class KafkaPublisher[F[_]: Async, A, B <: SpecificRecord](kafkaProducer: KafkaProducer[String, SpecificRecord], topic: KafkaTopic[A, B])(
   implicit futureUnwrapper: WrappedFuture[F, *] ~> F
 ) extends Publisher[F, A] {
+
+  private val logger = Logger[KafkaPublisher[F, A, B]]
 
   override val publish: Pipe[F, A, Unit] =
     data =>
@@ -38,7 +41,9 @@ class KafkaPublisher[F[_]: Async, A, B <: SpecificRecord](kafkaProducer: KafkaPr
             promise.future
           }
 
-        futureUnwrapper.apply(wrappedFuture).as((): Unit)
+        logger.info[F](s"Publishing message to ${topic.name}")
+          .productR(futureUnwrapper.apply(wrappedFuture))
+          .productR(logger.info[F](s"Message published to ${topic.name}"))
     }
 
 }
