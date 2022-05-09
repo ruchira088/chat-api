@@ -6,6 +6,7 @@ import cats.implicits._
 import cats.~>
 import com.ruchij.config.KafkaConfiguration
 import com.ruchij.pubsub.Publisher
+import com.ruchij.services.messages.models.Message
 import com.ruchij.types.FunctionKTypes.WrappedFuture
 import com.ruchij.types.Logger
 import fs2.Pipe
@@ -17,7 +18,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 import scala.concurrent.Promise
 
-class KafkaPublisher[F[_]: Async, A, B <: SpecificRecord](kafkaProducer: KafkaProducer[String, SpecificRecord], topic: KafkaTopic[A, B])(
+class KafkaPublisher[F[_]: Async, A <: Message, B <: SpecificRecord](kafkaProducer: KafkaProducer[String, SpecificRecord], topic: KafkaTopic[A, B])(
   implicit futureUnwrapper: WrappedFuture[F, *] ~> F
 ) extends Publisher[F, A] {
 
@@ -41,9 +42,9 @@ class KafkaPublisher[F[_]: Async, A, B <: SpecificRecord](kafkaProducer: KafkaPr
             promise.future
           }
 
-        logger.info[F](s"Publishing message to ${topic.name}")
+        logger.info[F](s"Publishing message to topic=${topic.name} messageId=${value.messageId}")
           .productR(futureUnwrapper.apply(wrappedFuture))
-          .productR(logger.info[F](s"Message published to ${topic.name}"))
+          .productR(logger.info[F](s"Message published to topic=${topic.name} messageId=${value.messageId}"))
     }
 
 }

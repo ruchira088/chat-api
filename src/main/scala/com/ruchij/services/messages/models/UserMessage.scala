@@ -1,10 +1,9 @@
 package com.ruchij.services.messages.models
 
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.{Decoder, Encoder}
 import org.joda.time.DateTime
 
-sealed trait UserMessage {
-  val messageId: String
+sealed trait UserMessage extends Message {
   val senderId: String
   val sentAt: DateTime
   val message: String

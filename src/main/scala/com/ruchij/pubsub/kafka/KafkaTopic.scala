@@ -1,13 +1,14 @@
 package com.ruchij.pubsub.kafka
 
 import com.ruchij.avro.chat.OneToOneMessage
+import com.ruchij.services.messages.models.Message
 import com.ruchij.services.messages.models.UserMessage.OneToOne
 import org.apache.avro.specific.SpecificRecord
 import org.joda.time.DateTime
 
 import java.time.Instant
 
-trait KafkaTopic[A, B <: SpecificRecord] {
+trait KafkaTopic[A <: Message, B <: SpecificRecord] {
   val name: String
 
   def toSpecificRecord(value: A): B

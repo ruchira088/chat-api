@@ -13,7 +13,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import org.http4s.server.middleware.GZip
 import org.http4s.server.websocket.WebSocketBuilder2
-import org.http4s.{HttpApp, HttpRoutes, StaticFile}
+import org.http4s.{HttpApp, HttpRoutes}
 
 object Routes {
   def apply[F[_]: Async](

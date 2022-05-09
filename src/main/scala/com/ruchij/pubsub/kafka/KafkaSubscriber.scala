@@ -5,6 +5,7 @@ import cats.~>
 import com.ruchij.config.KafkaConfiguration
 import com.ruchij.pubsub.Subscriber
 import com.ruchij.pubsub.models.CommittableRecord
+import com.ruchij.services.messages.models.Message
 import com.ruchij.types.FunctionKTypes.WrappedFuture
 import fs2.Stream
 import io.confluent.kafka.serializers.{AbstractKafkaSchemaSerDeConfig, KafkaAvroDeserializer, KafkaAvroDeserializerConfig}
@@ -19,7 +20,7 @@ import java.util.Properties
 import scala.concurrent.Promise
 import scala.jdk.CollectionConverters._
 
-class KafkaSubscriber[F[_]: Sync, A, B <: SpecificRecord](
+class KafkaSubscriber[F[_]: Sync, A <: Message, B <: SpecificRecord](
   kafkaConfiguration: KafkaConfiguration,
   kafkaTopic: KafkaTopic[A, B]
 )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F)
