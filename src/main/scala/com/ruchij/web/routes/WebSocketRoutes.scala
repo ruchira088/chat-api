@@ -8,7 +8,7 @@ import com.ruchij.dao.user.models.User
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.Message
-import com.ruchij.services.messages.models.Message.messageCirceEncoder
+import com.ruchij.services.messages.models.Message.{HeartBeat, messageCirceEncoder}
 import com.ruchij.types.FunctionKTypes._
 import com.ruchij.types.{JodaClock, Logger}
 import com.ruchij.web.ws.{InboundMessage, OutboundMessage}
@@ -21,6 +21,9 @@ import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.websocket.WebSocketFrame
+
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 object WebSocketRoutes {
 
@@ -46,11 +49,17 @@ object WebSocketRoutes {
                 channel <- Stream.eval(Channel.unbounded[F, Message])
                 _ <- Stream.eval(messagingService.register(user, channel))
 
-                userMessage <- channel.stream
+                message <-
+                  channel.stream.merge {
+                    Stream.eval(JodaClock[F].timestamp)
+                      .repeat
+                      .metered(10 seconds)
+                      .map { dateTime => HeartBeat("heart-beat", dateTime) }
+                  }
 
                 webSocketFrame =
                   WebSocketFrame.Text {
-                    Encoder[OutboundMessage].apply(OutboundMessage.fromMessage(userMessage)).noSpaces
+                    Encoder[OutboundMessage].apply(OutboundMessage.fromMessage(message)).noSpaces
                   }
               } yield webSocketFrame,
               input =>

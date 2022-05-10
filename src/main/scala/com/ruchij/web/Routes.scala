@@ -7,6 +7,7 @@ import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.user.UserService
+import com.ruchij.types.JodaClock
 import com.ruchij.web.middleware.{ExceptionHandler, NotFoundHandler}
 import com.ruchij.web.routes._
 import org.http4s.dsl.Http4sDsl
@@ -16,7 +17,7 @@ import org.http4s.server.websocket.WebSocketBuilder2
 import org.http4s.{HttpApp, HttpRoutes}
 
 object Routes {
-  def apply[F[_]: Async](
+  def apply[F[_]: Async: JodaClock](
     userService: UserService[F],
     authenticationService: AuthenticationService[F],
     messagingService: MessagingService[F],
