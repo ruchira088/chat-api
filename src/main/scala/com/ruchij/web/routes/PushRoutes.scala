@@ -5,10 +5,9 @@ import cats.implicits._
 import com.ruchij.circe.Decoders.dateTimeDecoder
 import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.messages.MessagingService
-import com.ruchij.services.messages.models.UserMessage
-import com.ruchij.services.messages.models.UserMessage.userMessageDecoder
+import com.ruchij.services.messages.models.Message.messageCirceDecoder
 import com.ruchij.web.middleware.ServiceAuthenticator
-import com.ruchij.web.requests.RequestOps
+import com.ruchij.web.requests.{RequestOps, UserPushMessageRequest}
 import com.ruchij.web.responses.PushResponse
 import com.ruchij.web.validate.Validator.baseValidator
 import io.circe.generic.auto.{exportDecoder, exportEncoder}
@@ -27,8 +26,8 @@ object PushRoutes {
       HttpRoutes.of {
         case request @ POST -> Root =>
           for {
-            userMessage <- request.to[UserMessage]
-            success <- messagingService.sendToUser(userMessage.senderId, userMessage)
+            UserPushMessageRequest(receiverId, message) <- request.to[UserPushMessageRequest]
+            success <- messagingService.sendToUser(receiverId, message)
             response <- if (success) Accepted(PushResponse(true)) else NotAcceptable(PushResponse(false))
           } yield response
       }

@@ -2,7 +2,7 @@ package com.ruchij.web.ws
 
 import com.ruchij.circe.Decoders.{authenticationTokenDecoder, enumDecoder}
 import com.ruchij.services.authentication.models.AuthenticationToken
-import com.ruchij.services.messages.models.UserMessage
+import com.ruchij.services.messages.models.Message
 import io.circe.generic.auto.exportDecoder
 import io.circe.{Decoder, HCursor, Json}
 import org.joda.time.DateTime
@@ -32,13 +32,13 @@ object InboundMessage {
           decoder.decodeJson(typedWebSocketMessage.message)
         }
 
-  def toUserMessage(userId: String, webSocketMessage: InboundMessage, timestamp: DateTime): Option[UserMessage] =
+  def toMessage(userId: String, webSocketMessage: InboundMessage, timestamp: DateTime): Option[Message] =
     webSocketMessage match {
       case SendOneToOneMessageInbound(messageId, receiverId, message) =>
-        Some(UserMessage.OneToOne(messageId, userId, timestamp, receiverId, message))
+        Some(Message.OneToOne(messageId, userId, timestamp, receiverId, message))
 
       case SendGroupMessageInbound(messageId, groupId, message) =>
-        Some(UserMessage.Group(messageId, userId, timestamp, groupId, message))
+        Some(Message.Group(messageId, userId, timestamp, groupId, message))
 
       case _ => None
     }

@@ -1,18 +1,18 @@
 package com.ruchij.web.ws
 
-import com.ruchij.services.messages.models.UserMessage
-import com.ruchij.services.messages.models.UserMessage.{Group, OneToOne}
+import com.ruchij.services.messages.models.Message
+import com.ruchij.services.messages.models.Message.{Group, OneToOne}
 
-case class OutboundMessage(messageType: MessageType, message: UserMessage)
+case class OutboundMessage(messageType: MessageType, message: Message)
 
 object OutboundMessage {
-  def messageType(userMessage: UserMessage): MessageType =
-    userMessage match {
+  def messageType(message: Message): MessageType =
+    message match {
       case _: OneToOne => MessageType.OneToOne
       case _: Group => MessageType.GroupMessage
     }
 
-  def fromUserMessage(userMessage: UserMessage): OutboundMessage =
-    OutboundMessage(messageType(userMessage), userMessage)
+  def fromMessage(message: Message): OutboundMessage =
+    OutboundMessage(messageType(message), message)
 
 }

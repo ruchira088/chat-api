@@ -7,11 +7,12 @@ import com.ruchij.circe.Encoders.{dateTimeEncoder, enumEncoder}
 import com.ruchij.dao.user.models.User
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
-import com.ruchij.services.messages.models.UserMessage
-import com.ruchij.services.messages.models.UserMessage.userMessageEncoder
+import com.ruchij.services.messages.models.Message
+import com.ruchij.services.messages.models.Message.messageCirceEncoder
 import com.ruchij.types.FunctionKTypes._
 import com.ruchij.types.{JodaClock, Logger}
 import com.ruchij.web.ws.{InboundMessage, OutboundMessage}
+import com.ruchij.web.ws.InboundMessage.inboundWebSocketMessageDecoder
 import fs2.Stream
 import fs2.concurrent.Channel
 import io.circe.{Encoder, parser => JsonParser}
@@ -42,14 +43,14 @@ object WebSocketRoutes {
             .build(
               for {
                 user <- Stream.eval(deferred.get)
-                channel <- Stream.eval(Channel.unbounded[F, UserMessage])
+                channel <- Stream.eval(Channel.unbounded[F, Message])
                 _ <- Stream.eval(messagingService.register(user, channel))
 
                 userMessage <- channel.stream
 
                 webSocketFrame =
                   WebSocketFrame.Text {
-                    Encoder[OutboundMessage].apply(OutboundMessage.fromUserMessage(userMessage)).noSpaces
+                    Encoder[OutboundMessage].apply(OutboundMessage.fromMessage(userMessage)).noSpaces
                   }
               } yield webSocketFrame,
               input =>
@@ -73,7 +74,7 @@ object WebSocketRoutes {
                       messagingService.submit {
                         Stream.eval(deferred.get.product(JodaClock[F].timestamp))
                           .flatMap { case (user, timestamp) =>
-                            Stream.emits(InboundMessage.toUserMessage(user.id, inboundMessage, timestamp).toList)
+                            Stream.emits(InboundMessage.toMessage(user.id, inboundMessage, timestamp).toList)
                           }
                       }
 

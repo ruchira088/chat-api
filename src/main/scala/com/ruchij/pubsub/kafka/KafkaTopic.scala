@@ -2,7 +2,7 @@ package com.ruchij.pubsub.kafka
 
 import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.services.messages.models.Message
-import com.ruchij.services.messages.models.UserMessage.OneToOne
+import com.ruchij.services.messages.models.Message.OneToOne
 import org.apache.avro.specific.SpecificRecord
 import org.joda.time.DateTime
 
@@ -28,7 +28,7 @@ object KafkaTopic {
         .setMessageId(oneToOne.messageId)
         .setSenderId(oneToOne.senderId)
         .setReceiverId(oneToOne.receiverId)
-        .setMessage(oneToOne.message)
+        .setMessage(oneToOne.content)
         .setSentAt(Instant.ofEpochMilli(oneToOne.sentAt.getMillis))
         .build()
 

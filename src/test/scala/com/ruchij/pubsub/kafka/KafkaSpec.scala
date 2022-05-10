@@ -5,7 +5,7 @@ import cats.implicits._
 import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.external.embedded.EmbeddedExternalServiceProvider
 import com.ruchij.pubsub.models.CommittableRecord
-import com.ruchij.services.messages.models.UserMessage.OneToOne
+import com.ruchij.services.messages.models.Message.OneToOne
 import com.ruchij.test.utils.IOUtils.runIO
 import com.ruchij.types.FunctionKTypes.ioFutureToIO
 import com.ruchij.types.JodaClock
@@ -38,7 +38,7 @@ class KafkaSpec extends AnyFlatSpec with Matchers {
                 IO.delay {
                     oneToOne.senderId mustBe "my-sender"
                     oneToOne.receiverId mustBe "my-receiver"
-                    oneToOne.message mustBe s"Hello World $index"
+                    oneToOne.content mustBe s"Hello World $index"
                     oneToOne.messageId mustBe index.toString
                   }
                   .product(commit)

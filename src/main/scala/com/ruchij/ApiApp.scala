@@ -3,8 +3,8 @@ package com.ruchij
 import cats.data.Reader
 import cats.effect.kernel.Resource
 import cats.effect.{Async, ExitCode, IO, IOApp}
-import cats.~>
 import cats.implicits._
+import cats.~>
 import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.config.{InstanceConfiguration, ServiceConfiguration}
 import com.ruchij.dao.credentials.DoobieCredentialsDao
@@ -19,8 +19,8 @@ import com.ruchij.services.authentication.models.{AuthenticationToken, Authentic
 import com.ruchij.services.hashing.BcryptPasswordHashingService
 import com.ruchij.services.health.HealthServiceImpl
 import com.ruchij.services.messages.MessagingServiceImpl
-import com.ruchij.services.messages.models.UserMessage
-import com.ruchij.services.messages.models.UserMessage.{Group, OneToOne}
+import com.ruchij.services.messages.models.Message
+import com.ruchij.services.messages.models.Message.{Group, OneToOne}
 import com.ruchij.services.user.UserServiceImpl
 import com.ruchij.types.FunctionKTypes.{WrappedFuture, ioFutureToIO}
 import com.ruchij.types.JodaClock
@@ -133,12 +133,12 @@ object ApiApp extends IOApp {
 
   def kafkaPublisher[F[_]: Async](
     kafkaProducer: KafkaProducer[String, SpecificRecord]
-  )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): Publisher[F, UserMessage] = {
+  )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): Publisher[F, Message] = {
     val oneToOnePublisher =
       new KafkaPublisher[F, OneToOne, OneToOneMessage](kafkaProducer, KafkaTopic.OneToOneMessageTopic)
 
-    new Publisher[F, UserMessage] {
-      override val publish: Pipe[F, UserMessage, Unit] =
+    new Publisher[F, Message] {
+      override val publish: Pipe[F, Message, Unit] =
         input =>
           input.flatMap {
             case oneToOne: OneToOne => oneToOnePublisher.publish(Stream.emit[F, OneToOne](oneToOne))
