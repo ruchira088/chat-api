@@ -1,7 +1,7 @@
 let user
 
-const initialize = (host, onOpen, onMessage) => {
-    const ws = new WebSocket(`ws://${host}/ws`)
+const initialize = (webSocketServer, onOpen, onMessage) => {
+    const ws = new WebSocket(`${webSocketServer}/ws`)
 
     ws.addEventListener("open", () => {
         onOpen()
@@ -17,7 +17,7 @@ const initialize = (host, onOpen, onMessage) => {
 const onMessage = document => message => appendToChatConsole(document, message)
 const onOpen = document => () => appendToChatConsole(document, "Web Socket connection created")
 
-const ws = initialize(location.host, onOpen, onMessage)
+const ws = initialize(`${(location.protocol === "https:" ? "wss" : "ws")}://${location.host}`, onOpen, onMessage)
 
 const appendToChatConsole = (document, message) => {
     const block = document.createElement("div")
