@@ -27,5 +27,4 @@ object Decoders {
 
   implicit def enumDecoder[A <: EnumEntry](implicit enumValues: Enum[A]): Decoder[A] =
     Decoder.decodeString.emap(input => enumValues.withNameInsensitiveEither(input).left.map(_.getMessage()))
-
 }

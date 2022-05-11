@@ -6,6 +6,7 @@ import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.user.UserService
+import com.ruchij.types.JodaClock
 import com.ruchij.web.Routes
 import org.http4s.HttpApp
 import org.http4s.server.websocket.WebSocketBuilder2
@@ -19,7 +20,8 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
   val messagingService: MessagingService[F] = mock[MessagingService[F]]
   val healthService: HealthService[F] = mock[HealthService[F]]
   val webSocketBuilder2: WebSocketBuilder2[F] = null
-  val serviceAuthenticationConfiguration = mock[ServiceAuthenticationConfiguration]
+  val serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration = mock[ServiceAuthenticationConfiguration]
+  val jodaClock: JodaClock[F] = mock[JodaClock[F]]
 
   val async: Async[F]
 
@@ -31,6 +33,6 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
       healthService,
       webSocketBuilder2,
       serviceAuthenticationConfiguration
-    )(async)
+    )(async, jodaClock)
 
 }

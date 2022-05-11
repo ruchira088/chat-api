@@ -4,7 +4,7 @@ import com.ruchij.circe.Decoders.{authenticationTokenDecoder, enumDecoder}
 import com.ruchij.services.authentication.models.AuthenticationToken
 import com.ruchij.services.messages.models.Message
 import io.circe.generic.auto.exportDecoder
-import io.circe.{Decoder, HCursor, Json}
+import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import org.joda.time.DateTime
 
 sealed trait InboundMessage {
@@ -22,14 +22,17 @@ object InboundMessage {
     (cursor: HCursor) =>
       cursor.as[TypedWebSocketMessage]
         .flatMap { typedWebSocketMessage =>
-          val decoder =
-            typedWebSocketMessage.messageType match {
-              case MessageType.Authentication => Decoder[Authentication]
-              case MessageType.OneToOne => Decoder[SendOneToOneMessageInbound]
-              case MessageType.GroupMessage => Decoder[SendGroupMessageInbound]
-            }
+          val decoder: PartialFunction[MessageType, Decoder[InboundMessage]] = {
+              case MessageType.Authentication => Decoder[Authentication].map(identity[InboundMessage])
+              case MessageType.OneToOne => Decoder[SendOneToOneMessageInbound].map(identity[InboundMessage])
+              case MessageType.GroupMessage => Decoder[SendGroupMessageInbound].map(identity[InboundMessage])
+          }
 
-          decoder.decodeJson(typedWebSocketMessage.message)
+          decoder.andThen(_.decodeJson(typedWebSocketMessage.message))
+            .applyOrElse[MessageType,Decoder.Result[InboundMessage]](
+              typedWebSocketMessage.messageType,
+              messageType => Left(DecodingFailure(s"$messageType is NOT supported", cursor.history))
+            )
         }
 
   def toMessage(userId: String, webSocketMessage: InboundMessage, timestamp: DateTime): Option[Message] =

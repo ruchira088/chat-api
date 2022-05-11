@@ -20,7 +20,7 @@ import com.ruchij.services.hashing.BcryptPasswordHashingService
 import com.ruchij.services.health.HealthServiceImpl
 import com.ruchij.services.messages.MessagingServiceImpl
 import com.ruchij.services.messages.models.Message
-import com.ruchij.services.messages.models.Message.{Group, OneToOne}
+import com.ruchij.services.messages.models.Message.OneToOne
 import com.ruchij.services.user.UserServiceImpl
 import com.ruchij.types.FunctionKTypes.{WrappedFuture, ioFutureToIO}
 import com.ruchij.types.JodaClock
@@ -142,7 +142,9 @@ object ApiApp extends IOApp {
         input =>
           input.flatMap {
             case oneToOne: OneToOne => oneToOnePublisher.publish(Stream.emit[F, OneToOne](oneToOne))
-            case group: Group => Stream.raiseError[F](new NotImplementedError("Group messages are NOT supported"))
+            case message => Stream.raiseError[F] {
+              new NotImplementedError(s"${message.getClass.getSimpleName} messages are NOT supported")
+            }
         }
     }
   }
