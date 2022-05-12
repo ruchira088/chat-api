@@ -14,7 +14,14 @@ const initialize = (webSocketServer, onOpen, onMessage) => {
     return ws
 }
 
-const onMessage = document => message => appendToChatConsole(document, message)
+const onMessage = document => ({messageType, message}) => {
+    if (messageType === "OneToOne") {
+        appendToChatConsole(document, message.content)
+    } else {
+
+    }
+}
+
 const onOpen = document => () => appendToChatConsole(document, "Web Socket connection created")
 
 const ws = initialize(`${(location.protocol === "https:" ? "wss" : "ws")}://${location.host}`, onOpen(document), onMessage(document))
@@ -57,7 +64,7 @@ const sendMessage = (user, document, ws) => {
     const messageField = document.getElementById("message")
     const text = messageField.value
 
-    const message = { messageType: "OneToOne", message: { messageId: Date.now().toString(), receiverId: user.id, message: text }}
+    const message = { messageType: "OneToOne", message: { messageId: Date.now().toString(), receiverId: user.id, content: text }}
 
     ws.send(JSON.stringify(message))
     messageField.value = ""

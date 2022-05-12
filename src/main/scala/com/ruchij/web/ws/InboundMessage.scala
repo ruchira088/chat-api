@@ -13,8 +13,8 @@ sealed trait InboundMessage {
 
 object InboundMessage {
   case class Authentication(messageId: String, authenticationToken: AuthenticationToken) extends InboundMessage
-  case class SendOneToOneMessageInbound(messageId: String, receiverId: String, message: String) extends InboundMessage
-  case class SendGroupMessageInbound(messageId: String, groupId: String, message: String) extends InboundMessage
+  case class SendOneToOneMessageInbound(messageId: String, receiverId: String, content: String) extends InboundMessage
+  case class SendGroupMessageInbound(messageId: String, groupId: String, content: String) extends InboundMessage
 
   private case class TypedWebSocketMessage(messageType: MessageType, message: Json)
 

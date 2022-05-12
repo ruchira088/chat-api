@@ -9,6 +9,7 @@ object MessageType extends Enum[MessageType] {
   case object OneToOne extends MessageType
   case object GroupMessage extends MessageType
   case object HeartBeat extends MessageType
+  case object Acknowledgement extends MessageType
 
   override def values: IndexedSeq[MessageType] = findValues
 }

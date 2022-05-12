@@ -1,14 +1,16 @@
 package com.ruchij.web.routes
 
+import cats.{Applicative, ApplicativeError}
 import cats.data.OptionT
-import cats.effect.{Async, Deferred}
+import cats.effect.{Async, Concurrent, Deferred}
 import cats.implicits._
 import com.ruchij.circe.Encoders.{dateTimeEncoder, enumEncoder}
 import com.ruchij.dao.user.models.User
+import com.ruchij.exceptions.AuthenticationException
 import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.messages.models.Message
-import com.ruchij.services.messages.models.Message.{HeartBeat, messageCirceEncoder}
+import com.ruchij.services.messages.models.Message.{HeartBeat, MessageAcknowledgement, messageCirceEncoder}
 import com.ruchij.types.FunctionKTypes._
 import com.ruchij.types.{JodaClock, Logger}
 import com.ruchij.web.ws.{InboundMessage, OutboundMessage}
@@ -53,7 +55,7 @@ object WebSocketRoutes {
                   channel.stream.merge {
                     Stream.eval(JodaClock[F].timestamp)
                       .repeat
-                      .metered(10 seconds)
+                      .metered(30 seconds)
                       .map { dateTime => HeartBeat("heart-beat", dateTime) }
                   }
 
@@ -75,18 +77,46 @@ object WebSocketRoutes {
                     case _ => Stream.empty
                   }
                   .flatMap {
-                    case InboundMessage.Authentication(_, authenticationToken) =>
-                      Stream.eval { authenticationService.authenticate(authenticationToken).flatMap(deferred.complete) }
+                    case InboundMessage.Authentication(messageId, authenticationToken) =>
+                      Stream.eval {
+                        authenticationService.authenticate(authenticationToken)
+                          .flatTap(deferred.complete)
+                      }
+                        .evalMap { user =>
+                          val authenticationAcknowledgement =
+                              Stream.eval(JodaClock[F].timestamp)
+                              .evalMap { timestamp =>
+                                messagingService.sendToUser(user.id, MessageAcknowledgement(messageId, timestamp))
+                              }
+                              .metered(200 microseconds)
+                              .filter(sent => sent)
+                              .take(1)
+                              .compile
+                              .drain
+
+                          Concurrent[F]
+                            .race(Concurrent[F].sleep(5 seconds), authenticationAcknowledgement)
+                            .flatMap {
+                              _.fold[F[Unit]](
+                                _ => ApplicativeError[F, Throwable].raiseError[Unit] {
+                                  AuthenticationException("Authentication acknowledgement timeout after 5 seconds")
+                                },
+                                _ => Applicative[F].unit
+                              )
+                            }
+                        }
                         .productR(Stream.empty)
 
                     case inboundMessage =>
-                      messagingService.submit {
-                        Stream.eval(deferred.get.product(JodaClock[F].timestamp))
-                          .flatMap { case (user, timestamp) =>
+                      Stream.eval(deferred.get.product(JodaClock[F].timestamp))
+                        .flatMap { case (user, timestamp) =>
+                          messagingService.submit {
                             Stream.emits(InboundMessage.toMessage(user.id, inboundMessage, timestamp).toList)
                           }
-                      }
-
+                            .evalTap { _ =>
+                              messagingService.sendToUser(user.id, MessageAcknowledgement(inboundMessage.messageId, timestamp))
+                            }
+                        }
                 }
             )
         }

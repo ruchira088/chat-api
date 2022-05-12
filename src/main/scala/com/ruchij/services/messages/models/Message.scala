@@ -15,24 +15,30 @@ object Message {
   case class Group(messageId: String, senderId: String, sentAt: DateTime, groupId: String, content: String)
       extends Message
 
+  case class MessageAcknowledgement(messageId: String, sentAt: DateTime) extends Message
+
   case class HeartBeat(messageId: String, sentAt: DateTime) extends Message
 
   implicit def messageCirceDecoder(
     implicit oneToOneDecoder: Decoder[OneToOne],
     groupDecoder: Decoder[Group],
-    heartBeatDecoder: Decoder[HeartBeat]
+    heartBeatDecoder: Decoder[HeartBeat],
+    messageAcknowledgementDecoder: Decoder[MessageAcknowledgement]
   ): Decoder[Message] =
     oneToOneDecoder.map(identity[Message])
       .or(groupDecoder.map(identity[Message]))
       .or(heartBeatDecoder.map(identity[Message]))
+      .or(messageAcknowledgementDecoder.map(identity[Message]))
 
   implicit def messageCirceEncoder(
     implicit oneToOneEncoder: Encoder[OneToOne],
     groupEncoder: Encoder[Group],
-    heartBeatEncoder: Encoder[HeartBeat]
+    heartBeatEncoder: Encoder[HeartBeat],
+    messageAcknowledgementEncoder: Encoder[MessageAcknowledgement]
   ): Encoder[Message] = {
     case oneToOne: OneToOne => oneToOneEncoder(oneToOne)
     case group: Group => groupEncoder(group)
     case heartBeat: HeartBeat => heartBeatEncoder(heartBeat)
+    case acknowledgement: MessageAcknowledgement => messageAcknowledgementEncoder(acknowledgement)
   }
 }
