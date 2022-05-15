@@ -1,3 +1,4 @@
+let ws
 let user
 
 const initialize = (webSocketServer, onOpen, onMessage) => {
@@ -24,8 +25,6 @@ const onMessage = document => ({messageType, message}) => {
 
 const onOpen = document => () => appendToChatConsole(document, "Web Socket connection created")
 
-const ws = initialize(`${(location.protocol === "https:" ? "wss" : "ws")}://${location.host}`, onOpen(document), onMessage(document))
-
 const appendToChatConsole = (document, message) => {
     const block = document.createElement("div")
     block.innerText = message
@@ -35,27 +34,17 @@ const appendToChatConsole = (document, message) => {
 }
 
 const clickCreateUser = async () => {
-    user = await userCreationFlow(document, ws)
+    user = await userCreationFlow(document)
+    ws = initialize(`${(location.protocol === "https:" ? "wss" : "ws")}://${location.host}`, onOpen(document), onMessage(document))
 }
 
-const clickSendMessage = async () => {
-    if (user != null) {
-        sendMessage(user, document, ws)
-    } else {
-        console.error("Please create and authenticate user before sending any messages")
-    }
-}
+const clickSendMessage = () => sendMessage(user, document, ws)
 
-const userCreationFlow = async (document, ws) => {
+const userCreationFlow = async (document) => {
     const createdUser = await createUser(document)
     clearUserForm(document)
 
-    const authenticationToken = await authenticate(createdUser.email, createdUser.password)
-
-    const authenticationMessage =
-        {messageType: "Authentication", message: {authenticationToken, messageId: Date.now().toString() }}
-
-    ws.send(JSON.stringify(authenticationMessage))
+    await authenticate(createdUser.email, createdUser.password)
 
     return createdUser
 }
