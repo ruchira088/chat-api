@@ -5,6 +5,7 @@ import cats.implicits._
 import com.ruchij.circe.Decoders.{emailDecoder, passwordDecoder}
 import com.ruchij.circe.Encoders.authenticationTokenEncoder
 import com.ruchij.services.authentication.AuthenticationService
+import com.ruchij.web.middleware.UserAuthenticator
 import com.ruchij.web.requests.{RequestOps, UserLoginRequest}
 import com.ruchij.web.responses.AuthenticationTokenResponse
 import io.circe.generic.auto._
@@ -23,7 +24,7 @@ object AuthenticationRoutes {
           UserLoginRequest(email, password) <- request.to[UserLoginRequest]
           authenticationToken <- authenticationService.login(email, password)
           response <- Created(AuthenticationTokenResponse(authenticationToken))
-        } yield response
+        } yield UserAuthenticator.addAuthenticationCookie(response, authenticationToken)
     }
 
   }

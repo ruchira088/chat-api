@@ -13,10 +13,10 @@ object ResourceRoutes {
 
     HttpRoutes {
       case request @ GET -> Root =>
-        StaticFile.fromResource("http/index.html", Some(request))
+        StaticFile.fromResource("index.html", Some(request))
 
       case request @ GET -> Root / fileName if ServedFiles.contains(fileName) =>
-        StaticFile.fromResource(s"http/$fileName", Some(request))
+        StaticFile.fromResource(fileName, Some(request))
 
       case _ => OptionT.none
     }

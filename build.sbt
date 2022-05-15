@@ -80,6 +80,7 @@ lazy val root =
       buildInfoPackage := "com.eed3si9n.ruchij",
       topLevelDirectory := None,
       Universal / javaOptions ++= Seq("-Dlogback.configurationFile=/opt/data/logback.xml"),
+      Compile / unmanagedResourceDirectories += baseDirectory.value / "nginx" / "files"
     )
     .dependsOn(migrationApp)
 
