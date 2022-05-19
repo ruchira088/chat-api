@@ -76,9 +76,11 @@ services:
       <<: *chat-api-envs
       CHAT_API_HOSTNAME: "chat-api-3"
 
-  chat-worker:
+  chat-worker-1: &chat-worker
     image: chat-worker:latest
     depends_on:
+      mongo:
+        condition: service_healthy
       kafka-broker:
         condition: service_healthy
       schema-registry:
@@ -88,6 +90,11 @@ services:
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       API_SERVICE_URL: "http://load-balancer"
       API_AUTHENTICATION_TOKEN: "my-service-token"
+      MONGO_URL: "mongodb://mongo:27017"
+
+  chat-worker-2: *chat-worker
+
+  chat-worker-3: *chat-worker
 
   chat-migration-app:
     image: chat-migration-app:latest
@@ -115,6 +122,18 @@ services:
       POSTGRES_DB: "chat-system"
       POSTGRES_USER: "admin"
       POSTGRES_PASSWORD: "password"
+
+  mongo:
+    image: mongo
+    healthcheck:
+      test: "/opt/scripts/wait-for-it.sh mongo:27017"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+    ports:
+      - 27017:27017
+    volumes:
+      - "./docker-compose/scripts:/opt/scripts"
 
   redis:
     image: redis
