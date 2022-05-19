@@ -30,7 +30,7 @@ object Routes {
     val routes: HttpRoutes[F] =
       ResourceRoutes[F] <+>
         Router(
-          "/user" -> UserRoutes(userService),
+          "/user" -> UserRoutes(userService, authenticationService),
           "/authentication" -> AuthenticationRoutes(authenticationService),
           "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
           "/push" -> PushRoutes(messagingService, serviceAuthenticationConfiguration),

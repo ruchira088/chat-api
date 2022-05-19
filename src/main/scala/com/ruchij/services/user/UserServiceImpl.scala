@@ -46,4 +46,6 @@ class UserServiceImpl[F[_]: Sync: JodaClock: IdGenerator, G[_]: Monad](
 
     } yield user
 
+  override def searchUsers(searchTerm: String, pageSize: Int, pageNumber: Int): F[Seq[User]] =
+    transaction { userDao.search(searchTerm, pageNumber, pageSize) }
 }

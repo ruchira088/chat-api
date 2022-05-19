@@ -27,4 +27,16 @@ object DoobieUserDao extends UserDao[ConnectionIO] {
 
   override def findByEmail(email: Email): ConnectionIO[Option[User]] =
     (FindQuery ++ fr"WHERE email = $email").query[User].option
+
+  override def search(searchTerm: String, pageNumber: Int, pageSize: Int): ConnectionIO[Seq[User]] =
+    (FindQuery ++
+      fr"""
+        WHERE
+          email = ${s"%$searchTerm%"}
+          OR first_name = ${s"%$searchTerm%"}
+          OR last_name = ${s"%$searchTerm%"}
+        ORDER BY created_at
+        LIMIT $pageSize OFFSET ${pageSize * pageNumber}
+      """)
+      .query[User].to[Seq]
 }

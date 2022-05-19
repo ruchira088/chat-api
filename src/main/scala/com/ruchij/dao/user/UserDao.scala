@@ -8,4 +8,6 @@ trait UserDao[F[_]] {
   def findByUserId(userId: String): F[Option[User]]
 
   def findByEmail(email: Email): F[Option[User]]
+
+  def search(searchTerm: String, pageNumber: Int, pageSize: Int): F[Seq[User]]
 }
