@@ -9,7 +9,7 @@ import java.sql.Timestamp
 object DoobieMappings {
 
   implicit val jodaTimeGet: Get[DateTime] =
-    Get[Timestamp].map { timestamp => new DateTime(timestamp) }
+    Get[Timestamp].tmap { timestamp => new DateTime(timestamp) }
 
   implicit val jodaTimePut: Put[DateTime] =
     Put[Timestamp].tcontramap { dateTime => new Timestamp(dateTime.getMillis) }

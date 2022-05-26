@@ -22,4 +22,8 @@ object FunctionKTypes {
     override def apply[A](fa: WrappedFuture[IO, A]): IO[A] = IO.fromFuture(fa)
   }
 
+  implicit def identityFunctionK[F[_]]: F ~> F = new ~>[F, F] {
+    override def apply[A](fa: F[A]): F[A] = fa
+  }
+
 }

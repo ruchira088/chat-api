@@ -50,6 +50,7 @@ lazy val root =
           h2,
           bcrypt,
           enumeratum,
+          mongoDriver,
           redis4CatsEffect,
           kafkaClients,
           kafkaAvroSerializer,

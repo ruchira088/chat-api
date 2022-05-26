@@ -9,6 +9,9 @@ import com.ruchij.avro.chat.OneToOneMessage
 import com.ruchij.config.{InstanceConfiguration, ServiceConfiguration}
 import com.ruchij.dao.credentials.DoobieCredentialsDao
 import com.ruchij.dao.doobie.DoobieTransactor
+import com.ruchij.dao.file.MongoFileMetadataDao
+import com.ruchij.dao.mongo.MongoClient
+import com.ruchij.dao.profile.DoobieProfileImageDao
 import com.ruchij.dao.user.DoobieUserDao
 import com.ruchij.kv.{KeySpace, KeySpacedKeyValueStore, RedisKeyValueStore}
 import com.ruchij.migration.MigrationApp
@@ -16,14 +19,16 @@ import com.ruchij.pubsub.Publisher
 import com.ruchij.pubsub.kafka.{KafkaPublisher, KafkaTopic}
 import com.ruchij.services.authentication.AuthenticationServiceImpl
 import com.ruchij.services.authentication.models.{AuthenticationToken, AuthenticationTokenDetails}
+import com.ruchij.services.filestore.LocalFileStore
 import com.ruchij.services.hashing.BcryptPasswordHashingService
 import com.ruchij.services.health.HealthServiceImpl
 import com.ruchij.services.messages.MessagingServiceImpl
 import com.ruchij.services.messages.models.Message
 import com.ruchij.services.messages.models.Message.OneToOne
 import com.ruchij.services.user.UserServiceImpl
-import com.ruchij.types.FunctionKTypes.{WrappedFuture, ioFutureToIO}
+import com.ruchij.types.FunctionKTypes.{WrappedFuture, identityFunctionK, ioFutureToIO}
 import com.ruchij.types.JodaClock
+import com.ruchij.types.RandomGenerator.IdGenerator
 import com.ruchij.web.Routes
 import dev.profunktor.redis4cats.effect.Log.Stdout.instance
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
@@ -37,6 +42,7 @@ import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.client.Client
 import org.http4s.server.websocket.WebSocketBuilder2
+import org.mongodb.scala.MongoDatabase
 import pureconfig.ConfigSource
 
 object ApiApp extends IOApp {
@@ -44,7 +50,8 @@ object ApiApp extends IOApp {
     httpClient: Client[F],
     redisCommands: RedisCommands[F, String, String],
     kafkaProducer: KafkaProducer[String, SpecificRecord],
-    hikariTransactor: HikariTransactor[F]
+    hikariTransactor: HikariTransactor[F],
+    mongoDatabase: MongoDatabase
   )
 
   override def run(args: List[String]): IO[ExitCode] =
@@ -78,9 +85,11 @@ object ApiApp extends IOApp {
       redisCommands <- Redis[F].utf8(serviceConfiguration.redisConfiguration.uri)
       kafkaProducer <- KafkaPublisher.createProducer[F](serviceConfiguration.kafkaConfiguration)
       hikariTransactor <- DoobieTransactor.create(serviceConfiguration.databaseConfiguration)
-    } yield ApplicationResources(client, redisCommands, kafkaProducer, hikariTransactor)
+      mongoDatabase <- MongoClient.create(serviceConfiguration.mongoConfiguration)
 
-  def httpApplication[F[_]: Async: JodaClock](
+    } yield ApplicationResources(client, redisCommands, kafkaProducer, hikariTransactor, mongoDatabase)
+
+  def httpApplication[F[_]: Async: JodaClock: IdGenerator](
     applicationResources: ApplicationResources[F],
     serviceConfiguration: ServiceConfiguration
   )(implicit futureUnwrapper: WrappedFuture[F, *] ~> F): Reader[WebSocketBuilder2[F], HttpApp[F]] = {
@@ -105,8 +114,18 @@ object ApiApp extends IOApp {
         DoobieCredentialsDao
       )
 
+    val mongoFileMetadataDao = new MongoFileMetadataDao[F](applicationResources.mongoDatabase)
+
+    val fileStore = new LocalFileStore[F, F](serviceConfiguration.fileStoreConfiguration, mongoFileMetadataDao)
+
     val userService =
-      new UserServiceImpl[F, ConnectionIO](passwordHashingService, DoobieUserDao, DoobieCredentialsDao)
+      new UserServiceImpl[F, ConnectionIO](
+        passwordHashingService,
+        fileStore,
+        DoobieUserDao,
+        DoobieCredentialsDao,
+        DoobieProfileImageDao
+      )
 
     val messagingService =
       new MessagingServiceImpl[F](
@@ -142,9 +161,10 @@ object ApiApp extends IOApp {
         input =>
           input.flatMap {
             case oneToOne: OneToOne => oneToOnePublisher.publish(Stream.emit[F, OneToOne](oneToOne))
-            case message => Stream.raiseError[F] {
-              new NotImplementedError(s"${message.getClass.getSimpleName} messages are NOT supported")
-            }
+            case message =>
+              Stream.raiseError[F] {
+                new NotImplementedError(s"${message.getClass.getSimpleName} messages are NOT supported")
+              }
         }
     }
   }

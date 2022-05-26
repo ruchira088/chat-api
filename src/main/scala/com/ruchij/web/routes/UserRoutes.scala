@@ -47,8 +47,10 @@ object UserRoutes {
 
           case (request @ POST -> Root / "profile-image") as user =>
             for {
-              profileImageRequest <- request.as[ProfileImageRequest[F]]
-            } yield ???
+              ProfileImageRequest(fileName, mediaType, data) <- request.as[ProfileImageRequest[F]]
+              insertionResult <- userService.addProfileImage(user.id, fileName, mediaType, data)
+              response <- Created(insertionResult)
+            } yield response
         }
       }
   }

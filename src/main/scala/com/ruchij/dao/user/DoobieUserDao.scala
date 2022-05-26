@@ -6,7 +6,14 @@ import doobie.ConnectionIO
 import doobie.implicits.toSqlInterpolator
 
 object DoobieUserDao extends UserDao[ConnectionIO] {
-  private val FindQuery = fr"SELECT id, created_at, email, first_name, last_name FROM chat_users"
+  private val FindQuery =
+    fr"""
+      SELECT
+          chat_users.id, chat_users.created_at, chat_users.email, chat_users.first_name, chat_users.last_name,
+          profile_images.file_id
+        FROM chat_users
+        LEFT JOIN profile_images ON profile_images.user_id = chat_users.id
+    """
 
   override def insert(user: User): ConnectionIO[Int] =
     sql"""

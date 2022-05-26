@@ -17,7 +17,7 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
       ConfigSource.string {
         s"""
           database-configuration {
-            url = "jdbc:h2:mem:chat-system;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false"
+            url = "jdbc:h2:mem:chat-api;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false"
             url = $${?DATABASE_URL}
 
             user = "my-user"
@@ -25,6 +25,19 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
 
             password = "my-password"
             password = $${?DATABASE_PASSWORD}
+          }
+
+          mongo-configuration {
+            connection-string = "mongodb://mongo:27017"
+            connection-string = $${?MONGO_URL}
+
+            database = "chat-api"
+            database = $${?MONGO_DATABASE}
+          }
+
+          file-store-configuration {
+            root = "/opt/images"
+            root = $${?FILE_STORE_ROOT}
           }
 
           redis-configuration {
@@ -79,7 +92,7 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
     ServiceConfiguration.parse[IO](configObjectSource).flatMap { serviceConfiguration =>
       IO.delay {
         serviceConfiguration.databaseConfiguration mustBe DatabaseConfiguration(
-          "jdbc:h2:mem:chat-system;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false",
+          "jdbc:h2:mem:chat-api;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false",
           "my-user",
           "my-password"
         )
@@ -94,6 +107,10 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
 
         serviceConfiguration.authenticationConfiguration mustBe
           AuthenticationConfiguration(ServiceAuthenticationConfiguration("my-token"))
+
+        serviceConfiguration.mongoConfiguration mustBe MongoConfiguration("mongodb://mongo:27017", "chat-api")
+
+        serviceConfiguration.fileStoreConfiguration mustBe FileStoreConfiguration("/opt/images")
 
         serviceConfiguration.buildInformation mustBe
           BuildInformation(Some("my-branch"), None, Some(new DateTime(2021, 7, 31, 10, 10, 0, 0, DateTimeZone.UTC)))

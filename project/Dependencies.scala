@@ -24,11 +24,13 @@ object Dependencies
 
   lazy val jodaTime = "joda-time" % "joda-time" % "2.10.14"
 
-  lazy val flyway = "org.flywaydb" % "flyway-core" % "8.5.7"
+  lazy val flyway = "org.flywaydb" % "flyway-core" % "8.5.10"
 
   lazy val doobieHikari = "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2"
 
   lazy val postgres = "org.postgresql" % "postgresql" % "42.3.4"
+
+  lazy val mongoDriver = "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
 
   lazy val h2 = "com.h2database" % "h2" % "2.1.212"
 

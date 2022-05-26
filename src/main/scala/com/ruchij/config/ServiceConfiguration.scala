@@ -11,6 +11,8 @@ import pureconfig.generic.auto._
 
 case class ServiceConfiguration(
   databaseConfiguration: DatabaseConfiguration,
+  mongoConfiguration: MongoConfiguration,
+  fileStoreConfiguration: FileStoreConfiguration,
   redisConfiguration: RedisConfiguration,
   kafkaConfiguration: KafkaConfiguration,
   httpConfiguration: HttpConfiguration,

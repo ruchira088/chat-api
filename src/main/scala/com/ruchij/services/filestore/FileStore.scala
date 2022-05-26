@@ -7,5 +7,5 @@ import org.http4s.MediaType
 trait FileStore[F[_]] {
   def save(fileName: String, mediaType: MediaType, data: Stream[F, Byte]): F[FileInsertionResult]
 
-  def retrieve(fileId: String): F[FileResource[F]]
+  def retrieve(fileId: String): F[Option[FileResource[F]]]
 }

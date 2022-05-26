@@ -9,5 +9,6 @@ case class FileResource[F[_]](
   createdAt: DateTime,
   path: String,
   mediaType: MediaType,
+  size: Long,
   data: Stream[F, Byte]
 )
