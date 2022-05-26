@@ -9,7 +9,7 @@ import com.ruchij.services.authentication.AuthenticationService
 import com.ruchij.services.user.UserService
 import com.ruchij.web.middleware.UserAuthenticator
 import com.ruchij.web.requests.QueryParameters.{PageNumber, PageSize, SearchTerm}
-import com.ruchij.web.requests.{CreateUserRequest, RequestOps}
+import com.ruchij.web.requests.{CreateUserRequest, ProfileImageRequest, RequestOps}
 import com.ruchij.web.responses.UserSearchResponse
 import com.ruchij.web.validate.Validator.baseValidator
 import io.circe.generic.auto._
@@ -44,6 +44,11 @@ object UserRoutes {
               .flatMap { users =>
                 Ok(UserSearchResponse(searchTerm, pageNumber, pageSize, users))
               }
+
+          case (request @ POST -> Root / "profile-image") as user =>
+            for {
+              profileImageRequest <- request.as[ProfileImageRequest[F]]
+            } yield ???
         }
       }
   }

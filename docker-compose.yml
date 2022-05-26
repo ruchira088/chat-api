@@ -91,6 +91,7 @@ services:
       API_SERVICE_URL: "http://load-balancer"
       API_AUTHENTICATION_TOKEN: "my-service-token"
       MONGO_URL: "mongodb://mongo:27017"
+      MONGO_DATABASE: "chat-worker"
 
   chat-worker-2: *chat-worker
 
