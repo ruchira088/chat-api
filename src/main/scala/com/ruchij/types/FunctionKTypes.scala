@@ -25,5 +25,4 @@ object FunctionKTypes {
   implicit def identityFunctionK[F[_]]: F ~> F = new ~>[F, F] {
     override def apply[A](fa: F[A]): F[A] = fa
   }
-
 }

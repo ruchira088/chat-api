@@ -145,6 +145,7 @@ object ApiApp extends IOApp {
         messagingService,
         healthService,
         webSocketBuilder,
+        fileStore,
         serviceConfiguration.authenticationConfiguration.serviceAuthentication
       )
     }

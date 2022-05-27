@@ -5,6 +5,7 @@ x-chat-api-envs:
     DATABASE_URL: "jdbc:postgresql://postgres:5432/chat-system"
     DATABASE_USER: "admin"
     DATABASE_PASSWORD: "password"
+    MONGO_URL: "mongodb://mongo:27017"
     REDIS_HOSTNAME: "redis"
     REDIS_PORT: "6379"
     REDIS_PASSWORD: "my-redis-password"
@@ -43,6 +44,8 @@ services:
     depends_on: &chat-api-depends-on
       postgres:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
       redis:
         condition: service_healthy
       kafka-broker:
@@ -54,6 +57,7 @@ services:
     volumes: &chat-api-volumes
       - "./docker-compose/scripts:/opt/scripts"
       - "./src/main/resources/logback.xml:/opt/data/logback.xml"
+      - "./file-store:/opt/file-store"
     environment:
       <<: *chat-api-envs
       CHAT_API_HOSTNAME: "chat-api-1"

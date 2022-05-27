@@ -3,6 +3,7 @@ package com.ruchij.test.mixins
 import cats.effect.Async
 import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.authentication.AuthenticationService
+import com.ruchij.services.filestore.FileStore
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.user.UserService
@@ -21,6 +22,7 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
   val healthService: HealthService[F] = mock[HealthService[F]]
   val webSocketBuilder2: WebSocketBuilder2[F] = null
   val serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration = mock[ServiceAuthenticationConfiguration]
+  val fileStore: FileStore[F] = mock[FileStore[F]]
   val jodaClock: JodaClock[F] = mock[JodaClock[F]]
 
   val async: Async[F]
@@ -32,6 +34,7 @@ trait MockedRoutes[F[_]] extends MockFactory with OneInstancePerTest {
       messagingService,
       healthService,
       webSocketBuilder2,
+      fileStore,
       serviceAuthenticationConfiguration
     )(async, jodaClock)
 

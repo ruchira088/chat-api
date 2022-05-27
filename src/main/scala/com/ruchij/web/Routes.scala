@@ -4,6 +4,7 @@ import cats.effect.Async
 import cats.implicits.toSemigroupKOps
 import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.services.authentication.AuthenticationService
+import com.ruchij.services.filestore.FileStore
 import com.ruchij.services.health.HealthService
 import com.ruchij.services.messages.MessagingService
 import com.ruchij.services.user.UserService
@@ -23,6 +24,7 @@ object Routes {
     messagingService: MessagingService[F],
     healthService: HealthService[F],
     webSocketBuilder2: WebSocketBuilder2[F],
+    fileStore: FileStore[F],
     serviceAuthenticationConfiguration: ServiceAuthenticationConfiguration
   ): HttpApp[F] = {
     implicit val dsl: Http4sDsl[F] = new Http4sDsl[F] {}
@@ -34,6 +36,7 @@ object Routes {
           "/authentication" -> AuthenticationRoutes(authenticationService),
           "/ws" -> WebSocketRoutes(messagingService, authenticationService, webSocketBuilder2),
           "/push" -> PushRoutes(messagingService, serviceAuthenticationConfiguration),
+          "/file-resource" -> FileResourceRoutes(fileStore, authenticationService),
           "/service" -> HealthRoutes(healthService)
         )
 
