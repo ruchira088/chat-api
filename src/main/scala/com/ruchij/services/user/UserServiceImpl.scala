@@ -1,5 +1,6 @@
 package com.ruchij.services.user
 
+import cats.data.OptionT
 import cats.effect.kernel.Sync
 import cats.implicits._
 import cats.{Applicative, ApplicativeError, Monad, ~>}
@@ -8,7 +9,7 @@ import com.ruchij.dao.credentials.models.Credentials
 import com.ruchij.dao.profile.ProfileImageDao
 import com.ruchij.dao.user.UserDao
 import com.ruchij.dao.user.models.{Email, User}
-import com.ruchij.exceptions.ResourceConflictException
+import com.ruchij.exceptions.{ResourceConflictException, ResourceNotFoundException}
 import com.ruchij.services.authentication.models.Password
 import com.ruchij.services.filestore.FileStore
 import com.ruchij.services.filestore.models.FileInsertionResult
@@ -66,4 +67,10 @@ class UserServiceImpl[F[_]: Sync: JodaClock: IdGenerator, G[_]: Monad](
       insertionResult <- fileStore.save(fileName, mediaType, profileImage)
       _ <- transaction(profileImageDao.insert(userId, insertionResult.fileId))
     } yield insertionResult
+
+  override def getById(userId: String): F[User] =
+    OptionT(transaction(userDao.findByUserId(userId)))
+      .getOrElseF {
+        ApplicativeError[F, Throwable].raiseError(ResourceNotFoundException(s"Unable to find user: id=$userId"))
+      }
 }

@@ -45,6 +45,9 @@ object UserRoutes {
                 Ok(UserSearchResponse(searchTerm, pageNumber, pageSize, users))
               }
 
+          case GET -> Root / "id" / userId as _ =>
+            userService.getById(userId).flatMap(user => Ok(user))
+
           case (request @ POST -> Root / "profile-image") as user =>
             for {
               ProfileImageRequest(fileName, mediaType, data) <- request.as[ProfileImageRequest[F]]

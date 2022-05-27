@@ -12,4 +12,6 @@ trait UserService[F[_]] {
   def addProfileImage(userId: String, fileName: String, mediaType: MediaType, profileImage: Stream[F, Byte]): F[FileInsertionResult]
 
   def searchUsers(searchTerm: String, pageSize: Int, pageNumber: Int): F[Seq[User]]
+
+  def getById(userId: String): F[User]
 }
