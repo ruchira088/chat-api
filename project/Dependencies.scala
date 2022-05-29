@@ -3,8 +3,8 @@ import sbt._
 object Dependencies
 {
   val ScalaVersion = "2.13.8"
-  val Http4sVersion = "0.23.11"
-  val CirceVersion = "0.14.1"
+  val Http4sVersion = "0.23.12"
+  val CirceVersion = "0.14.2"
 
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.3.11"
 
@@ -28,17 +28,17 @@ object Dependencies
 
   lazy val doobieHikari = "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2"
 
-  lazy val postgres = "org.postgresql" % "postgresql" % "42.3.4"
+  lazy val postgres = "org.postgresql" % "postgresql" % "42.3.6"
 
-  lazy val mongoDriver = "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.0"
+  lazy val mongoDriver = "org.mongodb.scala" %% "mongo-scala-driver" % "4.6.0"
 
   lazy val h2 = "com.h2database" % "h2" % "2.1.212"
 
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.4"
 
-  lazy val redis4CatsEffect = "dev.profunktor" %% "redis4cats-effects" % "1.1.1"
+  lazy val redis4CatsEffect = "dev.profunktor" %% "redis4cats-effects" % "1.2.0"
 
-  lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "3.1.0"
+  lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "3.2.0"
 
   lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.1"
 
@@ -52,7 +52,7 @@ object Dependencies
 
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.11"
 
-  lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
+  lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
 
   lazy val enumeratum = "com.beachape" %% "enumeratum" % "1.7.0"
 
