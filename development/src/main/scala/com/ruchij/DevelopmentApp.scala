@@ -23,7 +23,9 @@ object DevelopmentApp extends IOApp {
       databaseConfiguration <- externalServiceProvider.databaseConfiguration
       redisConfiguration <- externalServiceProvider.redisConfiguration
       kafkaConfiguration <- externalServiceProvider.kafkaConfiguration
+      mongoConfiguration <- externalServiceProvider.mongoConfiguration
       timestamp <- Resource.eval(JodaClock[F].timestamp)
+      fileStoreConfiguration = FileStoreConfiguration("/Users/ruchira/Development/chat-api/file-store")
       httpConfiguration = HttpConfiguration("0.0.0.0", 8000)
       instanceConfiguration = InstanceConfiguration("localhost", 8000)
       authenticationConfiguration = AuthenticationConfiguration(ServiceAuthenticationConfiguration("my-service-token"))
@@ -31,6 +33,8 @@ object DevelopmentApp extends IOApp {
 
       serviceConfiguration = ServiceConfiguration(
         databaseConfiguration,
+        mongoConfiguration,
+        fileStoreConfiguration,
         redisConfiguration,
         kafkaConfiguration,
         httpConfiguration,

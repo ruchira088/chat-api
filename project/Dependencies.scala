@@ -6,7 +6,7 @@ object Dependencies
   val Http4sVersion = "0.23.12"
   val CirceVersion = "0.14.2"
 
-  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.3.11"
+  lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.3.12"
 
   lazy val http4sDsl = "org.http4s" %% "http4s-dsl" % Http4sVersion
 
@@ -24,7 +24,7 @@ object Dependencies
 
   lazy val jodaTime = "joda-time" % "joda-time" % "2.10.14"
 
-  lazy val flyway = "org.flywaydb" % "flyway-core" % "8.5.11"
+  lazy val flyway = "org.flywaydb" % "flyway-core" % "8.5.12"
 
   lazy val doobieHikari = "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC2"
 
@@ -49,6 +49,8 @@ object Dependencies
   lazy val embeddedRedis = "com.github.kstyrc" % "embedded-redis" % "0.6"
 
   lazy val embeddedKafkaSchemaRegistry = "io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "7.1.0"
+
+  lazy val embeddedMongo = "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "3.4.6"
 
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.11"
 

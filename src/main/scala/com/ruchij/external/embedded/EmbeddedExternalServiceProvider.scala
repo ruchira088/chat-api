@@ -3,11 +3,15 @@ package com.ruchij.external.embedded
 import cats.MonadError
 import cats.effect.{Resource, Sync}
 import cats.implicits._
-import com.ruchij.config.{KafkaConfiguration, RedisConfiguration}
+import com.ruchij.config.{KafkaConfiguration, MongoConfiguration, RedisConfiguration}
 import com.ruchij.external.ExternalServiceProvider
 import com.ruchij.external.embedded.EmbeddedExternalServiceProvider.freePort
 import com.ruchij.migration.config.DatabaseConfiguration
 import com.ruchij.types.RandomGenerator
+import de.flapdoodle.embed.mongo.MongodStarter
+import de.flapdoodle.embed.mongo.config.{MongodConfig, Net}
+import de.flapdoodle.embed.mongo.distribution.{IFeatureAwareVersion, Version}
+import de.flapdoodle.embed.process.runtime.Network
 import io.github.embeddedkafka.EmbeddedKafkaConfig
 import io.github.embeddedkafka.schemaregistry.{EmbeddedKafka, EmbeddedKafkaConfig => EmbeddedKafkaSchemaRegistryConfig}
 import org.http4s.Uri
@@ -63,6 +67,43 @@ class EmbeddedExternalServiceProvider[F[_]: Sync] extends ExternalServiceProvide
       }
     } yield kafkaConfiguration
 
+  override val mongoConfiguration: Resource[F, MongoConfiguration] = {
+    Resource
+      .eval {
+        for {
+          mongodStarter <- Sync[F].blocking(MongodStarter.getDefaultInstance)
+          port <- freePort
+          mongodConfig <- Sync[F].catchNonFatal {
+            val version: IFeatureAwareVersion = Version.Main.DEVELOPMENT
+            MongodConfig
+              .builder()
+              .version(version)
+              .net(new Net(port, Network.localhostIsIPv6()))
+              .build()
+          }
+        } yield (mongodStarter, mongodConfig)
+      }
+      .flatMap {
+        case (mongodStarter, mongodConfig) =>
+          Resource
+            .make(
+              Sync[F]
+                .blocking(mongodStarter.prepare(mongodConfig))
+                .flatTap(mongoExecutable => Sync[F].blocking(mongoExecutable.start()))
+            ) { mongoExecutable =>
+              Sync[F].blocking(mongoExecutable.stop())
+            }
+            .productR {
+              Resource.eval {
+                Sync[F]
+                  .blocking(s"${mongodConfig.net().getServerAddress.getHostAddress}:${mongodConfig.net().getPort}")
+                  .map { mongoUrl =>
+                    MongoConfiguration(s"mongodb://$mongoUrl", "chat-api")
+                  }
+              }
+            }
+      }
+  }
 }
 
 object EmbeddedExternalServiceProvider {

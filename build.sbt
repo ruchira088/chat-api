@@ -58,6 +58,7 @@ lazy val root =
           pureconfig,
           embeddedRedis,
           embeddedKafkaSchemaRegistry,
+          embeddedMongo,
           logbackClassic,
           scalaLogging
         ) ++
