@@ -38,9 +38,9 @@ import fs2.{Pipe, Stream}
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.http4s.HttpApp
-import org.http4s.blaze.client.BlazeClientBuilder
-import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.client.Client
+import org.http4s.ember.client.EmberClientBuilder
+import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.websocket.WebSocketBuilder2
 import org.mongodb.scala.MongoDatabase
 import pureconfig.ConfigSource
@@ -68,12 +68,12 @@ object ApiApp extends IOApp {
       .migrate[F](serviceConfiguration.databaseConfiguration)
       .productR {
         createApplicationResources[F](serviceConfiguration).use { applicationResources =>
-          BlazeServerBuilder[F]
+          EmberServerBuilder.default[F]
             .withHttpWebSocketApp(httpApplication(applicationResources, serviceConfiguration).run)
-            .bindHttp(serviceConfiguration.httpConfiguration.port, serviceConfiguration.httpConfiguration.host)
-            .serve
-            .compile
-            .lastOrError
+            .withHost(serviceConfiguration.httpConfiguration.host)
+            .withPort(serviceConfiguration.httpConfiguration.port)
+            .build
+            .use(_ => Async[F].never.as(ExitCode.Success))
         }
       }
 
@@ -81,7 +81,7 @@ object ApiApp extends IOApp {
     serviceConfiguration: ServiceConfiguration
   ): Resource[F, ApplicationResources[F]] =
     for {
-      client <- BlazeClientBuilder[F].resource
+      client <- EmberClientBuilder.default[F].build
       redisCommands <- Redis[F].utf8(serviceConfiguration.redisConfiguration.uri)
       kafkaProducer <- KafkaPublisher.createProducer[F](serviceConfiguration.kafkaConfiguration)
       hikariTransactor <- DoobieTransactor.create(serviceConfiguration.databaseConfiguration)

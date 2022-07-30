@@ -1,6 +1,7 @@
 package com.ruchij.config
 
 import cats.effect.IO
+import com.comcast.ip4s.IpLiteralSyntax
 import com.ruchij.config.AuthenticationConfiguration.ServiceAuthenticationConfiguration
 import com.ruchij.migration.config.DatabaseConfiguration
 import com.ruchij.test.utils.IOUtils.{IOErrorOps, runIO}
@@ -99,7 +100,7 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
 
         serviceConfiguration.redisConfiguration mustBe RedisConfiguration("localhost", 6379, None)
 
-        serviceConfiguration.httpConfiguration mustBe HttpConfiguration("127.0.0.1", 80)
+        serviceConfiguration.httpConfiguration mustBe HttpConfiguration(ipv4"127.0.0.1", port"80")
 
         serviceConfiguration.kafkaConfiguration mustBe KafkaConfiguration("kafka-broker:9092", uri"https://schema-registry:8081")
 

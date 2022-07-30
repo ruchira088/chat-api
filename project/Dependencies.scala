@@ -3,18 +3,18 @@ import sbt._
 object Dependencies
 {
   val ScalaVersion = "2.13.8"
-  val Http4sVersion = "0.23.12"
+  val Http4sVersion = "0.23.14"
   val CirceVersion = "0.14.2"
 
   lazy val catsEffect = "org.typelevel" %% "cats-effect" % "3.3.12"
 
   lazy val http4sDsl = "org.http4s" %% "http4s-dsl" % Http4sVersion
 
-  lazy val http4sBlazeServer = "org.http4s" %% "http4s-blaze-server" % Http4sVersion
+  lazy val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % Http4sVersion
 
   lazy val http4sCirce = "org.http4s" %% "http4s-circe" % Http4sVersion
 
-  lazy val http4sBlazeClient = "org.http4s" %% "http4s-blaze-client" % Http4sVersion
+  lazy val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % Http4sVersion
 
   lazy val circeGeneric = "io.circe" %% "circe-generic" % CirceVersion
 
@@ -30,9 +30,9 @@ object Dependencies
 
   lazy val postgres = "org.postgresql" % "postgresql" % "42.4.0"
 
-  lazy val mongoDriver = "org.mongodb.scala" %% "mongo-scala-driver" % "4.6.1"
+  lazy val mongoDriver = "org.mongodb.scala" %% "mongo-scala-driver" % "4.7.0"
 
-  lazy val h2 = "com.h2database" % "h2" % "2.1.212"
+  lazy val h2 = "com.h2database" % "h2" % "2.1.214"
 
   lazy val bcrypt = "org.mindrot" % "jbcrypt" % "0.4"
 
@@ -40,7 +40,7 @@ object Dependencies
 
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "3.2.0"
 
-  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.1.1"
+  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.2.1"
 
   lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0.1"
 
@@ -48,9 +48,9 @@ object Dependencies
 
   lazy val embeddedRedis = "com.github.kstyrc" % "embedded-redis" % "0.6"
 
-  lazy val embeddedKafkaSchemaRegistry = "io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "7.1.0"
+  lazy val embeddedKafkaSchemaRegistry = "io.github.embeddedkafka" %% "embedded-kafka-schema-registry" % "7.2.0"
 
-  lazy val embeddedMongo = "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "3.4.6"
+  lazy val embeddedMongo = "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "3.4.8"
 
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.11"
 

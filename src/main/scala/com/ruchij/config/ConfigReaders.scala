@@ -1,5 +1,6 @@
 package com.ruchij.config
 
+import com.comcast.ip4s.{Host, Port}
 import org.http4s.Uri
 import org.joda.time.DateTime
 import pureconfig.ConfigReader
@@ -22,4 +23,8 @@ object ConfigReaders {
         .left
         .map(parseFailure => CannotConvert(input, classOf[Uri].getSimpleName, parseFailure.message))
     }
+
+  implicit val hostConfigReader: ConfigReader[Host] = ConfigReader.fromNonEmptyStringOpt(Host.fromString)
+
+  implicit val portConfigReader: ConfigReader[Port] = ConfigReader.fromNonEmptyStringOpt(Port.fromString)
 }

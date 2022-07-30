@@ -38,9 +38,9 @@ lazy val root =
       libraryDependencies ++=
         Seq(
           http4sDsl,
-          http4sBlazeServer,
+          http4sEmberServer,
           http4sCirce,
-          http4sBlazeClient,
+          http4sEmberClient,
           circeGeneric,
           circeParser,
           circeLiteral,
