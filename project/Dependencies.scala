@@ -42,7 +42,7 @@ object Dependencies
 
   lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "7.2.1"
 
-  lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0.1"
+  lazy val chatAvroSchemas = "com.ruchij" % "chat-avro-schemas" % "1.0.2"
 
   lazy val pureconfig = "com.github.pureconfig" %% "pureconfig" % "0.17.1"
 

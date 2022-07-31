@@ -67,14 +67,14 @@ lazy val root =
         Seq(
           "Confluent" at "https://packages.confluent.io/maven/",
           "jitpack" at "https://jitpack.io",
-          "JFrog Artifactory" at "https://ruchij.jfrog.io/artifactory/default-maven-virtual/"
+          "GitHub Package Registry" at "https://maven.pkg.github.com/ruchira088/chat-avro-schemas"
         ),
       credentials += {
         val artifactoryCredentials =
-            for {
-            username <- environmentVariable("ARTIFACTORY_USERNAME")
-            password <- environmentVariable("ARTIFACTORY_PASSWORD")
-          } yield Credentials("Artifactory Realm", "ruchij.jfrog.io", username, password)
+          environmentVariable("GITHUB_TOKEN")
+            .map { password =>
+              Credentials("GitHub Package Registry", "maven.pkg.github.com", "ruchira088", password)
+            }
 
         artifactoryCredentials.getOrElse(Credentials(Path.userHome / ".sbt" / ".credentials"))
       },
