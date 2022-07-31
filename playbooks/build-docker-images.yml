@@ -4,17 +4,19 @@
 
   tasks:
     - name: Build API Docker image
-      import_tasks: tasks/build-docker-prod.yml
+      import_tasks: tasks/build-and-publish-docker-image.yml
       vars:
         app_name: chat-api
         sbt_project: root
         dockerfile: Dockerfile-prod.j2
         target_folder: target
+        publish: false
 
     - name: Build Migration Docker image
-      import_tasks: tasks/build-docker-prod.yml
+      import_tasks: tasks/build-and-publish-docker-image.yml
       vars:
-        app_name: chat-migration-app
+        app_name: chat-api-migration
         sbt_project: migrationApp
         dockerfile: Dockerfile-migration-prod.j2
         target_folder: migration-app/target
+        publish: false

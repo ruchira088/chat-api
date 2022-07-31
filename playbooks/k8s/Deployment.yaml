@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: chat-api-container
-          image: ruchira088/chat-api:{{ git_branch }}-{{ git_commit }}
+          image: ghcr.io/ruchira088/chat-api:{{ git_branch }}-{{ git_commit }}
           envFrom:
             - configMapRef:
                 name: chat-api-data-config-map
@@ -56,4 +56,6 @@ spec:
         - name: file-config-map
           configMap:
             name: chat-api-file-config-map
+      imagePullSecrets:
+        - name: docker-registry-credentials
 

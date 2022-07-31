@@ -3,6 +3,9 @@
   connection: local
 
   tasks:
+    - name: Install dependencies
+      import_tasks: tasks/install-dependencies.yml
+
     - name: Gather git information
       import_tasks: tasks/git-info.yml
 
@@ -14,6 +17,7 @@
       vars:
         domain: chat-api.dev.ruchij.com
         hostname: "{{ domain if git_branch == 'main' or git_branch == 'master' else git_branch + '.' + domain }}"
+        ghcr_credentials: "{{ lookup('aws_ssm', '/github/ghcr/docker-config', region='ap-southeast-2') }}"
 
     - name: Set kube_config
       import_tasks: tasks/k8s-config.yml

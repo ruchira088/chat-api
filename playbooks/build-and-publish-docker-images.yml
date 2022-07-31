@@ -3,28 +3,23 @@
   connection: local
 
   tasks:
-    - name: Build API Docker image
-      import_tasks: tasks/build-docker-prod.yml
+    - name: Install dependencies
+      import_tasks: tasks/install-dependencies.yml
+
+    - name: Build & publish API Docker image
+      import_tasks: tasks/build-and-publish-docker-image.yml
       vars:
         app_name: chat-api
         sbt_project: root
         dockerfile: Dockerfile-prod.j2
         target_folder: target
+        publish: true
 
-    - name: Build Migration App Docker image
-      import_tasks: tasks/build-docker-prod.yml
+    - name: Build & publish Migration App Docker image
+      import_tasks: tasks/build-and-publish-docker-image.yml
       vars:
-        app_name: chat-migration-app
+        app_name: chat-api-migration
         sbt_project: migrationApp
         dockerfile: Dockerfile-migration-prod.j2
         target_folder: migration-app/target
-
-    - name: Publish API Docker image
-      import_tasks: tasks/publish-docker-image.yml
-      vars:
-        app_name: chat-api
-
-    - name: Publish Migration App Docker image
-      import_tasks: tasks/publish-docker-image.yml
-      vars:
-        app_name: chat-migration-app
+        publish: true
