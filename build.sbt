@@ -71,7 +71,7 @@ lazy val root =
         ),
       credentials += {
         val artifactoryCredentials =
-          environmentVariable("GITHUB_TOKEN")
+          environmentVariable("GH_PACKAGE_REGISTRY_TOKEN")
             .map { password =>
               Credentials("GitHub Package Registry", "maven.pkg.github.com", "ruchira088", password)
             }
