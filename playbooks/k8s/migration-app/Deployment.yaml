@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-api-migration-deployment
+  namespace: {{ namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: chat-api-migration
+      branch: {{ git_branch }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chat-api-migration
+        branch: {{ git_branch }}
+    spec:
+      containers:
+        - name: chat-api-container
+          image: ghcr.io/ruchira088/chat-api-migration:{{ git_branch }}-{{ git_commit }}
+          envFrom:
+            - configMapRef:
+                name: chat-api-migration-data-config-map
+            - secretRef:
+                name: chat-api-migration-secrets
+          volumeMounts:
+            - mountPath: /opt/data
+              name: file-config-map
+      volumes:
+        - name: file-config-map
+          configMap:
+            name: chat-api-migration-file-config-map
+      imagePullSecrets:
+        - name: docker-registry-credentials
+

@@ -10,6 +10,16 @@
         path: k8s-output
         state: directory
 
+    - name: Create Migration app output directory
+      file:
+        path: k8s-output/migration-app
+        state: directory
+
+    - name: Create Chat API output directory
+      file:
+        path: k8s-output/chat-api
+        state: directory
+
 - name: Gather git information
   import_tasks: tasks/git-info.yml
 
@@ -17,8 +27,24 @@
   import_tasks: tasks/configs-and-secrets.yml
 
 - name: Render K8s resource files
-  template:
-    src: "{{ item }}"
-    dest: k8s-output/{{ item | basename }}
-  with_fileglob:
-    - k8s/*.yaml
+  block:
+    - name: Render common K8s resource files
+      template:
+        src: "{{ item }}"
+        dest: k8s-output/{{ item | basename }}
+      with_fileglob:
+        - k8s/*.yaml
+
+    - name: Render Migration app K8s resource files
+      template:
+        src: "{{ item }}"
+        dest: k8s-output/migration-app/{{ item | basename }}
+      with_fileglob:
+        - k8s/migration-app/*.yaml
+
+    - name: Render Chat API K8s resource files
+      template:
+        src: "{{ item }}"
+        dest: k8s-output/chat-api/{{ item | basename }}
+      with_fileglob:
+        - k8s/chat-api/*.yaml
