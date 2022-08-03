@@ -2,10 +2,11 @@ version: "3.8"
 
 x-chat-api-envs:
   environment: &chat-api-envs
-    DATABASE_URL: "jdbc:postgresql://postgres:5432/chat-system"
+    DATABASE_URL: "jdbc:postgresql://postgres:5432/chat-api"
     DATABASE_USER: "admin"
     DATABASE_PASSWORD: "password"
     MONGO_URL: "mongodb://mongo:27017"
+    MONGO_DATABASE: "chat-api"
     REDIS_HOSTNAME: "redis"
     REDIS_PORT: "6379"
     REDIS_PASSWORD: "my-redis-password"
@@ -124,7 +125,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_DB: "chat-system"
+      POSTGRES_DB: "chat-api"
       POSTGRES_USER: "admin"
       POSTGRES_PASSWORD: "password"
 
@@ -137,6 +138,10 @@ services:
       timeout: 5s
     ports:
       - 27017:27017
+    environment:
+      MONGODB_DATABASE: "chat-api"
+      MONGODB_USERNAME: "admin"
+      MONGODB_PASSWORD: "password"
     volumes:
       - "./docker-compose/scripts:/opt/scripts"
 

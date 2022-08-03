@@ -97,8 +97,8 @@ class EmbeddedExternalServiceProvider[F[_]: Sync] extends ExternalServiceProvide
               Resource.eval {
                 Sync[F]
                   .blocking(s"${mongodConfig.net().getServerAddress.getHostAddress}:${mongodConfig.net().getPort}")
-                  .map { mongoUrl =>
-                    MongoConfiguration(s"mongodb://$mongoUrl", "chat-api")
+                  .map { mongoHost =>
+                    MongoConfiguration(mongoHost, None, None, "chat-api")
                   }
               }
             }

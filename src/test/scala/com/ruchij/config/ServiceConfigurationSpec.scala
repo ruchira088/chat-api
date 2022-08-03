@@ -29,8 +29,12 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
           }
 
           mongo-configuration {
-            connection-string = "mongodb://mongo:27017"
-            connection-string = $${?MONGO_URL}
+            hosts = "mongo:27017"
+            hosts = $${?MONGO_URL}
+
+            user = "my-user"
+
+            password = "my-password"
 
             database = "chat-api"
             database = $${?MONGO_DATABASE}
@@ -109,7 +113,7 @@ class ServiceConfigurationSpec extends AnyFlatSpec with Matchers {
         serviceConfiguration.authenticationConfiguration mustBe
           AuthenticationConfiguration(ServiceAuthenticationConfiguration("my-token"))
 
-        serviceConfiguration.mongoConfiguration mustBe MongoConfiguration("mongodb://mongo:27017", "chat-api")
+        serviceConfiguration.mongoConfiguration mustBe MongoConfiguration("mongo:27017", Some("my-user"), Some("my-password"), "chat-api")
 
         serviceConfiguration.fileStoreConfiguration mustBe FileStoreConfiguration("/opt/images")
 
